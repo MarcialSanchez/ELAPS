@@ -20,12 +20,7 @@ public class Engine {
     }
 
     void run(){
-        System.out.println(project.getJavaFiles().size());
-        System.out.println(project.getCompilationUnits().size());
-
-        for(CompilationUnit unit :project.getCompilationUnits()){
-            System.out.println(CompilationUnitManager.getCUnitInfo(unit).toString());
-        }
+        Searcher.searchReferences(project.getCompilationUnits(),"getMedia");
     }
 
 
@@ -47,9 +42,7 @@ public class Engine {
             List<CompilationUnit> cUnitsList = new ArrayList<>();
             for(File file : javaFiles) {
                 CompilationUnit cu = JavaParser.parse(file);    // parse the file
-                cu.toString();
                 cUnitsList.add(cu);
-
             }
             return cUnitsList;
         }
