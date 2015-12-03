@@ -20,7 +20,7 @@ public class Engine {
     }
 
     void run(){
-        Searcher.searchReferences(project.getCompilationUnits(),"getMedia");
+        Searcher.searchReferences(project.getProjectRoot(),project.getCompilationUnits(),"getMedia");
     }
 
 
