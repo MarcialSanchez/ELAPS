@@ -5,8 +5,9 @@ import com.github.javaparser.ast.CompilationUnit;
 import es.ujaen.Exceptions.NoFilesInPathException;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by blitzer on 16/11/15.
@@ -14,13 +15,22 @@ import java.util.*;
 public class Engine {
 
     private Project project;
+    private static final String SINKS_XML = "sinks.xml";
+    private static final String SOURCES_XML = "sources.xml";
+    private static final String SAFES_XML = "safes.xml";
+    private static final String DERIVED_XML = "derived.xml";
 
     Engine(String rootUrl) throws Exception{
         project = new Project(rootUrl);
     }
 
     void run(){
-        Searcher.searchReferences(project.getProjectRoot(),project.getCompilationUnits(),"getMedia");
+        Collection<XmlManager.SinkDescription> sinks = XmlManager.readSinks(SINKS_XML);
+        for(XmlManager.SinkDescription sink : sinks){
+            //System.out.println("Looking for: "+sink.getID());
+            Collection<SearchMatch> matches = Searcher.searchReferences(project.getProjectRoot(),project.getCompilationUnits(),sink.getID());
+            //System.out.println(matches.size());
+        }
     }
 
 

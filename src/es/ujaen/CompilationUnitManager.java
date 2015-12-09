@@ -41,6 +41,7 @@ public class CompilationUnitManager {
         public void visit(MethodDeclaration node, Object arg) {
             log.log(Level.FINE, "NODO METODO VISITADO");
             fCurrentMethod = node;
+            System.out.println(node.getDeclarationAsString());
             info.setMethodDeclarator(node.getName(),node);
             super.visit(node, arg);
             fCurrentMethod = null;

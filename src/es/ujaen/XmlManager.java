@@ -12,11 +12,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * Created by blitzer on 16/11/15.
@@ -24,7 +21,7 @@ import java.util.Map;
 public class XmlManager {
 
         private static boolean TRACE = false;
-        private static String projectPath = "";
+        private static String projectPath = "resources/data/";
         //static Map<IMethod, SinkDescription> method2desc = new HashMap<IMethod, SinkDescription>();
 
         public static class SinkDescription {
