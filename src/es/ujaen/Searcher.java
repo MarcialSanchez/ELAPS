@@ -2,6 +2,7 @@ package es.ujaen;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -114,7 +115,7 @@ public class Searcher {
         return jarFiles;
     }
 
-    private static List<File> lookPathForSourceFolders(File directory) throws NoFilesInPathException {
+    private static List<File> lookPathForSourceFolders(File directory) throws NoFilesInPathException { //TODO la ruta se la pediremos al usuario
         File[] files= directory.listFiles();
         if(files == null){
             throw new NoFilesInPathException();
@@ -123,7 +124,7 @@ public class Searcher {
 
         for (File file : files) {
             if (file.isDirectory()) {
-                if (file.getName().equals("src")) {
+                if (file.getName().equals("java")) {
                     srcFolders.add(file);
                 }else{
                     List<File> tmpList = lookPathForSourceFolders(file);
@@ -163,7 +164,12 @@ public class Searcher {
                         }
                     }catch(UnsolvedTypeException | UnsolvedSymbolException u){
                         //e.printStackTrace();  //TODO resolver estas excepciones
-                        System.out.println(node.toString()+" - "+node.getArgs().toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
+                        System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
+                    }catch(UnsupportedOperationException unsop){
+                        System.out.println("UnsuportedOperationException - "+node.toString());
+                        unsop.printStackTrace();
+                    }catch(RuntimeException r){
+                        System.out.println("RuntimeException resolving node - "+node.toString());
                     }
                 }
             }
@@ -190,18 +196,19 @@ public class Searcher {
                 if (node.getArgs().size() > 1 && i != 0){
                     signature = signature + ",";
                 }
+                if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code>
+                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
+                    signature = signature + typeOfTheNode.describe();
 
-                TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
-                signature = signature + typeOfTheNode.describe();
+                }else {
+                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
+                    signature = signature + typeOfTheNode.describe();
+                }
 
             }
             signature = signature + ")";
             return signature;
         }
-        /*
-        public void visit(QualifiedNameExpr node, Object arg){
-            System.out.println(node.toString());
-        }*/
 
         public void setActualSearch(String name){
 
