@@ -12,12 +12,12 @@
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
 	</sink>
-	<sink id="java.sql.Statement.executeUpdate(String sql, int[])">
+	<sink id="java.sql.Statement.executeUpdate(String,int[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
 	</sink>
-	<sink id="java.sql.Statement.executeUpdate(String sql, String[])">
+	<sink id="java.sql.Statement.executeUpdate(String,String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
@@ -220,7 +220,7 @@
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
 	</sink>
-	<sink id="javax.xml.xpath.XPath. evaluate(String,Object)">
+	<sink id="javax.xml.xpath.XPath.evaluate(String,Object)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>

@@ -31,6 +31,8 @@ public class Engine {
             Collection<SearchMatch> matches = Searcher.searchReferences(project.getProjectRoot(),project.getCompilationUnits(),sink.getID());
             //System.out.println(matches.size());
         }
+        System.out.println("End Sink Search");
+
     }
 
 

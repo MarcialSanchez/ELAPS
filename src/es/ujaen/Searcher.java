@@ -3,9 +3,7 @@ package es.ujaen;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import es.ujaen.Exceptions.NoFilesInPathException;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -164,12 +162,11 @@ public class Searcher {
                         }
                     }catch(UnsolvedTypeException | UnsolvedSymbolException u){
                         //e.printStackTrace();  //TODO resolver estas excepciones
-                        System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
+                        //System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
                     }catch(UnsupportedOperationException unsop){
-                        System.out.println("UnsuportedOperationException - "+node.toString());
-                        unsop.printStackTrace();
+                        //System.out.println("UnsuportedOperationException - "+node.toString());
                     }catch(RuntimeException r){
-                        System.out.println("RuntimeException resolving node - "+node.toString());
+                        //System.out.println("RuntimeException resolving node - "+node.toString());
                     }
                 }
             }
@@ -196,9 +193,10 @@ public class Searcher {
                 if (node.getArgs().size() > 1 && i != 0){
                     signature = signature + ",";
                 }
-                if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code>
+                if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code> que no esta actualmente soportado por JavaSS
                     TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
-                    signature = signature + typeOfTheNode.describe();
+                    String typeAlone = typeOfTheNode.describe().substring(typeOfTheNode.describe().lastIndexOf(".")+1,typeOfTheNode.describe().indexOf("["));
+                    signature = signature + typeAlone;
 
                 }else {
                     TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
