@@ -56,7 +56,7 @@ public class Searcher {
                 visitor.visit(cUnit, null);
 
             }
-            matches = visitor.getMatches();                        //Tras escanear todos los documentos obtenemos la lista con los matches que hayamos encontrado.
+            matches.addAll(visitor.getMatches());                        //Tras escanear todos los documentos obtenemos la lista con los matches que hayamos encontrado.
         }
         if(searchType == DECLARATION){
             for(CompilationUnit cUnit : cUnits){                                    // Buscamos en cada uno de las CompilationUnit (corresponden a los ficheros java del proyecto)
@@ -149,7 +149,6 @@ public class Searcher {
                     solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
 
                     String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
-
                     if (actualSearchComplete.equals(qualifiedName)) {
                         matches.add(new SearchMatch(qualifiedName, node, actualCUnit, true));
                     }

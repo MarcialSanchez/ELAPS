@@ -2,7 +2,9 @@ package es.ujaen;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import es.ujaen.Exceptions.NoFilesInPathException;
+import javassist.expr.MethodCall;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,13 +28,39 @@ public class Engine {
 
     void run(){
         Collection<XmlManager.SinkDescription> sinks = XmlManager.readSinks(SINKS_XML);
+        Collection<SearchMatch> matches = new ArrayList<>();
         for(XmlManager.SinkDescription sink : sinks){
             //System.out.println("Looking for: "+sink.getID());
-            Collection<SearchMatch> matches = Searcher.searchReferences(project.getProjectRoot(),project.getCompilationUnits(),sink.getID());
-            //System.out.println(matches.size());
+            Collection<SearchMatch> actualSinkMatches = Searcher.searchReferences(project.getProjectRoot(), project.getCompilationUnits(), sink.getID());
+            if(actualSinkMatches != null){
+                matches.addAll(actualSinkMatches);
+            }
         }
+        System.out.println(matches.size());
         System.out.println("End Sink Search");
 
+        if(matches != null && !matches.isEmpty()){
+            Collection<XmlManager.SourceDescription> sources = XmlManager.readSources(SOURCES_XML);
+            Collection<XmlManager.DerivationDescription> derived = XmlManager.readDerivators(DERIVED_XML);
+            Collection<XmlManager.SafeDescription> safes = XmlManager.readSafes(SAFES_XML);
+            HistoryNode masterRoot = new HistoryNode();
+            Propagator.setDescriptions(sources,derived,safes);
+            for(SearchMatch match : matches) {
+                /**
+                 * Realizamos la propagación hacia atras en cada uno de los métodos sink que hayamos encontrado.
+                 * Se poblará masterRoot con todos los pasos dados en cada nodo.
+                 * masterRoot tendrá un hijo por cada match.
+                 */
+                Propagator.processNode((MethodCallExpr)match.getMatchNode(),masterRoot);
+            }
+            if(masterRoot.getChildren().size() != matches.size()){
+                System.out.println("Something happend in the propagation");
+            }else{
+                System.out.println("Propagation end correctly");
+            }
+        }else{
+            System.out.println("Any vulnerable method found");
+        }
     }
 
 

@@ -13,12 +13,15 @@ import java.util.List;
 public class HistoryNode {
 
     private HistoryNode parent;
-    private List<HistoryNode> children = null;
+    private List<HistoryNode> children = new ArrayList<>();
     private Node expression;
     private String nodeType;
     private Integer level;
     private Boolean validEnd;
 
+    public HistoryNode(){
+        this.level = 0;
+    }
     public HistoryNode(HistoryNode parent, Boolean validEnd, Node expression, String nodeType) {
         this.parent = parent;
         this.validEnd = validEnd;
@@ -28,12 +31,7 @@ public class HistoryNode {
     }
 
     public void addChildren(HistoryNode child){
-        if (children == null){
-            children = new ArrayList<>();
             children.add(child);
-        }else{
-            children.add(child);
-        }
     }
 
     public List<HistoryNode> getChildren() {
@@ -58,6 +56,10 @@ public class HistoryNode {
     }
 
     public Boolean isRootNode(){
+        return level == 1;
+    }
+
+    public Boolean isMasterRootNode(){
         return level == 0;
     }
 }
