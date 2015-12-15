@@ -31,7 +31,7 @@ public class Engine {
         Collection<SearchMatch> matches = new ArrayList<>();
         for(XmlManager.SinkDescription sink : sinks){
             //System.out.println("Looking for: "+sink.getID());
-            Collection<SearchMatch> actualSinkMatches = Searcher.searchReferences(project.getProjectRoot(), project.getCompilationUnits(), sink.getID());
+            Collection<SearchMatch> actualSinkMatches = Searcher.searchReferences(project.getProjectRoot(), project.getCompilationUnits(), sink);
             if(actualSinkMatches != null){
                 matches.addAll(actualSinkMatches);
             }
@@ -51,7 +51,7 @@ public class Engine {
                  * Se poblará masterRoot con todos los pasos dados en cada nodo.
                  * masterRoot tendrá un hijo por cada match.
                  */
-                Propagator.processNode((MethodCallExpr)match.getMatchNode(),masterRoot);
+                Propagator.processMatch(match,masterRoot);
             }
             if(masterRoot.getChildren().size() != matches.size()){
                 System.out.println("Something happend in the propagation");

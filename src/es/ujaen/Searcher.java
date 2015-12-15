@@ -32,45 +32,25 @@ public class Searcher {
     Searcher(){
     }
 
-    public static Collection searchReferences(File projectRoot, List<CompilationUnit> cUnits, String methodName){
-        return search(projectRoot, cUnits, REFERENCE, methodName);
-    }
+    public static Collection searchReferences(File projectRoot, List<CompilationUnit> cUnits, XmlManager.SinkDescription sink){
 
-    public static Collection searchDeclarations(File projectRoot, List<CompilationUnit> cUnits, String methodName){
-        return search(projectRoot, cUnits, DECLARATION, methodName);
-    }
-
-    private static Collection search(File projectRoot, List<CompilationUnit> cUnits, int searchType, String methodName ){ // Este metodo se encarga de realizar todas las busquedas según "searchType"
         Collection<SearchMatch> matches = new ArrayList<SearchMatch>();
+        generateTypeSolver(projectRoot);
+        MethodCallVisitor visitor = new MethodCallVisitor();   //Instanciamos el visitor que se encargará de recorrer los nodos.
+        visitor.setActualSearch(sink);                   //Asignamos la busqueda actual extraida del fichero sink.xml.
+        visitor.setTypeSolver(typeSolver);                     //Asignamos el typeSolver que hemos configurado anteriormente.
 
-        if(searchType == REFERENCE){
+        for(CompilationUnit cUnit : cUnits){                   //Por cada CompilationUnit (Ficheros.java) pasamos el visitor en busca de referencias al metodo que buscamos
 
-            generateTypeSolver(projectRoot);
-            MethodCallVisitor visitor = new MethodCallVisitor();   //Instanciamos el visitor que se encargará de recorrer los nodos.
-            visitor.setActualSearch(methodName);                   //Asignamos la busqueda actual extraida del fichero sink.xml.
-            visitor.setTypeSolver(typeSolver);                     //Asignamos el typeSolver que hemos configurado anteriormente.
+            visitor.setCUnit(cUnit);
+            visitor.visit(cUnit, null);
 
-            for(CompilationUnit cUnit : cUnits){                   //Por cada CompilationUnit (Ficheros.java) pasamos el visitor en busca de referencias al metodo que buscamos
-
-                visitor.setCUnit(cUnit);
-                visitor.visit(cUnit, null);
-
-            }
-            matches.addAll(visitor.getMatches());                        //Tras escanear todos los documentos obtenemos la lista con los matches que hayamos encontrado.
         }
-        if(searchType == DECLARATION){
-            for(CompilationUnit cUnit : cUnits){                                    // Buscamos en cada uno de las CompilationUnit (corresponden a los ficheros java del proyecto)
-                DeclarationInfo info = CompilationUnitManager.getCUnitInfo(cUnit);  // Obtenemos la info del CompilationUnit, al parsear cada uno de los ficheros guardamos la info de todas las declaraciones.
-                Node nodo = info.getMethodDeclarator(methodName);                   // Si hay una un metodo con el mismo nombre nos devolverá el nodo de este, si no devuelve null.
-                if(nodo != null){
-                    matches.add(new SearchMatch(methodName, nodo, cUnit, true));
-                }
-            }
-        }
-
+        matches.addAll(visitor.getMatches());                        //Tras escanear todos los documentos obtenemos la lista con los matches que hayamos encontrado.
 
         return matches;
     }
+
     private static CombinedTypeSolver generateTypeSolver(File projectRoot){
         if(typeSolver == null){
             typeSolver = new CombinedTypeSolver();  //Typesolver es la clase que contendrá todos los lugares donde se buscaran las clases importadas
@@ -136,6 +116,7 @@ public class Searcher {
 
     private static class MethodCallVisitor extends VoidVisitorAdapter {
         private ArrayList<SearchMatch> matches = new ArrayList<>();
+        private static XmlManager.SinkDescription actualSink;
         private static String actualSearchComplete;
         private static String actualSearchName;
         private static CombinedTypeSolver typeSolver;
@@ -150,14 +131,14 @@ public class Searcher {
 
                     String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
                     if (actualSearchComplete.equals(qualifiedName)) {
-                        matches.add(new SearchMatch(qualifiedName, node, actualCUnit, true));
+                        matches.add(new SearchMatch(qualifiedName, node, actualCUnit, actualSink, true));
                     }
                 } catch (Exception e) {                 //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
                     String signature = null;
                     try {
                         signature = getMethodSignatureFromCall(node);
                         if(actualSearchName.equals(signature)){
-                            matches.add(new SearchMatch(signature,node,actualCUnit,false));
+                            matches.add(new SearchMatch(signature,node,actualCUnit, actualSink, false));
                         }
                     }catch(UnsolvedTypeException | UnsolvedSymbolException u){
                         //e.printStackTrace();  //TODO resolver estas excepciones
@@ -207,10 +188,11 @@ public class Searcher {
             return signature;
         }
 
-        public void setActualSearch(String name){
+        public void setActualSearch(XmlManager.SinkDescription sink){
 
-            actualSearchComplete = name;
-            actualSearchName = name.substring(name.lastIndexOf(".") + 1, name.indexOf("("));
+            actualSink = sink;
+            actualSearchComplete = sink.getID();
+            actualSearchName = actualSearchComplete.substring(actualSearchComplete.lastIndexOf(".") + 1, actualSearchComplete.indexOf("("));
         }
         public void setTypeSolver(CombinedTypeSolver newtypeSolver){
             typeSolver = newtypeSolver;

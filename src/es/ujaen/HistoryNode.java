@@ -17,14 +17,27 @@ public class HistoryNode {
     private Node expression;
     private String nodeType;
     private Integer level;
-    private Boolean validEnd;
+    private Boolean poisoned;
+    private Boolean endNode;
 
     public HistoryNode(){
         this.level = 0;
     }
-    public HistoryNode(HistoryNode parent, Boolean validEnd, Node expression, String nodeType) {
+    public HistoryNode(HistoryNode parent, Node expression, String nodeType, Boolean poisoned) {
         this.parent = parent;
-        this.validEnd = validEnd;
+        parent.addChildren(this);
+        this.endNode = true;
+        this.poisoned = poisoned;
+        this.level = parent.getLevel()+1;
+        this.expression = expression;
+        this.nodeType = nodeType;
+    }
+
+    public HistoryNode(HistoryNode parent, Node expression, String nodeType) {
+        this.parent = parent;
+        parent.addChildren(this);
+        this.endNode = false;
+        this.poisoned = null;
         this.level = parent.getLevel()+1;
         this.expression = expression;
         this.nodeType = nodeType;
@@ -47,8 +60,12 @@ public class HistoryNode {
         return expression;
     }
 
-    public Boolean isValidEnd() {
-        return validEnd;
+    public Boolean isPoisoned() {
+        return poisoned;
+    }
+
+    public Boolean isEndNode(){
+        return endNode;
     }
 
     public Integer getLevel(){
