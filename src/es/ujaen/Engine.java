@@ -39,7 +39,7 @@ public class Engine {
         System.out.println(matches.size());
         System.out.println("End Sink Search");
 
-        if(matches != null && !matches.isEmpty()){
+        if(!matches.isEmpty()){
             Collection<XmlManager.SourceDescription> sources = XmlManager.readSources(SOURCES_XML);
             Collection<XmlManager.DerivationDescription> derived = XmlManager.readDerivators(DERIVED_XML);
             Collection<XmlManager.SafeDescription> safes = XmlManager.readSafes(SAFES_XML);
@@ -56,6 +56,7 @@ public class Engine {
             if(masterRoot.getChildren().size() != matches.size()){
                 System.out.println("Something happend in the propagation");
             }else{
+                masterRoot.print();
                 System.out.println("Propagation end correctly");
             }
         }else{

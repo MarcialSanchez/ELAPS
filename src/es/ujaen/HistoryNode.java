@@ -15,7 +15,7 @@ public class HistoryNode {
     private HistoryNode parent;
     private List<HistoryNode> children = new ArrayList<>();
     private Node expression;
-    private String nodeType;
+    private String nodeType ;
     private Integer level;
     private Boolean poisoned;
     private Boolean endNode;
@@ -78,5 +78,23 @@ public class HistoryNode {
 
     public Boolean isMasterRootNode(){
         return level == 0;
+    }
+
+    public void print(){
+        String tabulation = "";
+        for(Integer nTAb=0;nTAb<level;nTAb++){
+            tabulation = tabulation+"   ";
+        }
+            if( expression!=null) {
+                System.out.println(tabulation + " - "  + expression.toString() + " - " + nodeType);
+                if(isEndNode()){
+                    System.out.println(tabulation + " - Poisoned end: " + isPoisoned());
+                }
+            }else{
+                System.out.println("Start");
+            }
+        for(HistoryNode child : children){
+            child.print();
+        }
     }
 }

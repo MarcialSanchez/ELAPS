@@ -1,9 +1,10 @@
 package es.ujaen;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
+import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import es.ujaen.Exceptions.NoFilesInPathException;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -125,6 +126,10 @@ public class Searcher {
         @Override
         public void visit(MethodCallExpr node, Object arg) {
             MethodUsage solvedMethod = null;
+            if(node.getArgs().size()>0) {
+                System.out.println(node.toString());
+                System.out.println(node.getArgs().get(0).getClass());
+            }
             if(actualSearchName.equals(node.getName())) {
                 try {
                     solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
@@ -167,6 +172,7 @@ public class Searcher {
             qualifiedName = qualifiedName.concat(")");
             return qualifiedName;
         }
+
         private String getMethodSignatureFromCall(MethodCallExpr node){  //Obtenemos la signatura del método según los datos de la llamada
             String signature = node.getName() + "(";
             for (int i = 0; i < node.getArgs().size(); i++){
@@ -194,14 +200,40 @@ public class Searcher {
             actualSearchComplete = sink.getID();
             actualSearchName = actualSearchComplete.substring(actualSearchComplete.lastIndexOf(".") + 1, actualSearchComplete.indexOf("("));
         }
+
         public void setTypeSolver(CombinedTypeSolver newtypeSolver){
             typeSolver = newtypeSolver;
         }
+
         public void setCUnit(CompilationUnit cUnit){ actualCUnit = cUnit; }
 
         public ArrayList<SearchMatch> getMatches(){
             return matches;
         }
 
+    }
+
+    public static List<AssignExpr> searchAssignments(NameExpr expression, SearchMatch match){
+        List<AssignExpr> ourAssigns = new ArrayList<>();
+
+        AssignVisitor visitor = new AssignVisitor();
+        visitor.visit(match.getcUnit(), null);
+        List<AssignExpr> allAssigns = visitor.getList();  //Obtenemos todas las expresiones de asignación en el mismo CUnit donde tenemos el nombre
+        for(AssignExpr expr : allAssigns){
+            //todo continuar aqui
+        }
+        return ourAssigns;
+    }
+
+    private static class AssignVisitor extends VoidVisitorAdapter{
+        private List<AssignExpr> expressionsFound = new ArrayList<>();
+
+        public void visit(AssignExpr node, Object arg){
+            expressionsFound.add(node);
+        }
+
+        public List<AssignExpr> getList(){
+            return expressionsFound;
+        }
     }
 }
