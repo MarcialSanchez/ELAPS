@@ -13,14 +13,14 @@ public class SearchMatch {
     private String name;
     private MethodCallExpr matchNode;
     private CompilationUnit cUnit;
-    private XmlManager.SinkDescription sink;
+    private Object xmlDescriptor;
     private Boolean fullSignatureCheck;
 
-    SearchMatch(String _name, MethodCallExpr _matchNode, CompilationUnit _cUnit, XmlManager.SinkDescription _sink, Boolean _check) {
+    SearchMatch(String _name, MethodCallExpr _matchNode, CompilationUnit _cUnit, Object _xmlDescriptor, Boolean _check) {
         name = _name;
         matchNode = _matchNode;
         cUnit = _cUnit;
-        sink = _sink;
+        xmlDescriptor = _xmlDescriptor;
         fullSignatureCheck = _check;
     }
 
@@ -36,5 +36,19 @@ public class SearchMatch {
         return cUnit;
     }
 
-    public XmlManager.SinkDescription getMatchedSink(){ return sink; }
+    public XmlManager.SinkDescription getMatchedSink(){
+
+        if (xmlDescriptor instanceof XmlManager.SinkDescription){
+            return (XmlManager.SinkDescription)xmlDescriptor;
+        }
+        return null;
+    }
+
+    public XmlManager.SourceDescription getMatchedSource(){
+
+        if (xmlDescriptor instanceof XmlManager.SourceDescription){
+            return (XmlManager.SourceDescription)xmlDescriptor;
+        }
+        return null;
+    }
 }

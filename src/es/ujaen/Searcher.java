@@ -114,90 +114,103 @@ public class Searcher {
         return srcFolders;
     }
 
-    private static class MethodCallVisitor extends VoidVisitorAdapter {
-        private ArrayList<SearchMatch> matches = new ArrayList<>();
-        private static XmlManager.SinkDescription actualSink;
-        private static String actualSearchComplete;
-        private static String actualSearchName;
-        private static CombinedTypeSolver typeSolver;
-        private static CompilationUnit actualCUnit;
-
-        @Override
-        public void visit(MethodCallExpr node, Object arg) {
-            MethodUsage solvedMethod = null;
+    public static SearchMatch checkMethodCallExprAgainstMethodQualifiedName(String qNameForSearch,
+                                                                            MethodCallExpr node,
+                                                                            CompilationUnit actualCUnit,
+                                                                            Object xmlDescriptor
+    ){
+        MethodUsage solvedMethod = null;
 //            if(node.getArgs().size()>0) { //Para comprobar el tipo de los argumentos
 //                System.out.println(node.toString());
 //                System.out.println(node.getArgs().get(0).getClass());
 //            }
-            if(actualSearchName.equals(node.getName())) {
-                try {
-                    solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
+        String actualSearchName = getNameFromQualifiedName(qNameForSearch);
+        if(actualSearchName.equals(node.getName())) {
+            try {
+                solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
 
-                    String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
-                    if (actualSearchComplete.equals(qualifiedName)) {
-                        matches.add(new SearchMatch(qualifiedName, node, actualCUnit, actualSink, true));
-                    }
-                } catch (Exception e) {                 //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
-                    String signature = null;
-                    try {
-                        signature = getMethodSignatureFromCall(node);
-                        if(actualSearchName.equals(signature)){
-                            matches.add(new SearchMatch(signature,node,actualCUnit, actualSink, false));
-                        }
-                    }catch(UnsolvedTypeException | UnsolvedSymbolException u){
-                        //e.printStackTrace();  //TODO resolver estas excepciones
-                        //System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
-                    }catch(UnsupportedOperationException unsop){
-                        //System.out.println("UnsuportedOperationException - "+node.toString());
-                    }catch(RuntimeException r){
-                        //System.out.println("RuntimeException resolving node - "+node.toString());
-                    }
+                String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
+                if (qNameForSearch.equals(qualifiedName)) {
+                    return new SearchMatch(qualifiedName, node, actualCUnit, xmlDescriptor, true);
                 }
+            } catch (Exception e) {                 //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
+                String signature = null;
+                try {
+                    signature = getMethodSignatureFromCall(node);
+                    if(actualSearchName.equals(signature)){
+                        return new SearchMatch(signature,node,actualCUnit, xmlDescriptor, false);
+                    }
+                }catch(UnsolvedTypeException | UnsolvedSymbolException u){
+                    //e.printStackTrace();  //TODO resolver estas excepciones
+                    //System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
+                }catch(UnsupportedOperationException unsop){
+                    //System.out.println("UnsuportedOperationException - "+node.toString());
+                }catch(RuntimeException r){
+                    //System.out.println("RuntimeException resolving node - "+node.toString());
+                }
+            }
+        }
+        return null;
+    }
+    public static String getNameFromQualifiedName(String qName){
+       return qName.substring(qName.lastIndexOf(".") + 1, qName.indexOf("("));
+    }
+
+    private static String getMethodQualifiedNameFromDeclaration(MethodUsage solvedMethod){  //Obtenemos el Qualified Name del método obtenido a través de la resolución de tipos
+        String qualifiedName = solvedMethod.declaringType().getQualifiedName() + "." + solvedMethod.getName() + "(";
+        for (int i = 0; i < solvedMethod.getParamTypes().size(); i++) {
+
+            if (solvedMethod.getParamTypes().size() > 1 && i != 0) {
+                qualifiedName = qualifiedName.concat(",");
+            }
+            String type = solvedMethod.getParamTypes().get(i).describe();
+            qualifiedName = qualifiedName.concat(type.substring(type.lastIndexOf(".") + 1));
+        }
+        qualifiedName = qualifiedName.concat(")");
+        return qualifiedName;
+    }
+
+    private static String getMethodSignatureFromCall(MethodCallExpr node){  //Obtenemos la signatura del método según los datos de la llamada
+        String signature = node.getName() + "(";
+        for (int i = 0; i < node.getArgs().size(); i++){
+            if (node.getArgs().size() > 1 && i != 0){
+                signature = signature + ",";
+            }
+            if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code> que no esta actualmente soportado por JavaSS
+                TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
+                String typeAlone = typeOfTheNode.describe().substring(typeOfTheNode.describe().lastIndexOf(".")+1,typeOfTheNode.describe().indexOf("["));
+                signature = signature + typeAlone;
+
+            }else {
+                TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
+                signature = signature + typeOfTheNode.describe();
+            }
+
+        }
+        signature = signature + ")";
+        return signature;
+    }
+
+    private static class MethodCallVisitor extends VoidVisitorAdapter {
+        private ArrayList<SearchMatch> matches = new ArrayList<>();
+        private static XmlManager.SinkDescription actualSink;
+        private static String actualSearchComplete;
+        private static CompilationUnit actualCUnit;
+
+        @Override
+        public void visit(MethodCallExpr node, Object arg) {
+
+            SearchMatch match = checkMethodCallExprAgainstMethodQualifiedName(actualSearchComplete, node, actualCUnit, actualSink);
+            if(match != null){
+                matches.add(match);
             }
 
             super.visit(node, arg);
         }
 
-        private String getMethodQualifiedNameFromDeclaration(MethodUsage solvedMethod){  //Obtenemos el Qualified Name del método obtenido a través de la resolución de tipos
-            String qualifiedName = solvedMethod.declaringType().getQualifiedName() + "." + solvedMethod.getName() + "(";
-            for (int i = 0; i < solvedMethod.getParamTypes().size(); i++) {
-
-                if (solvedMethod.getParamTypes().size() > 1 && i != 0) {
-                    qualifiedName = qualifiedName.concat(",");
-                }
-                String type = solvedMethod.getParamTypes().get(i).describe();
-                qualifiedName = qualifiedName.concat(type.substring(type.lastIndexOf(".") + 1));
-            }
-            qualifiedName = qualifiedName.concat(")");
-            return qualifiedName;
-        }
-
-        private String getMethodSignatureFromCall(MethodCallExpr node){  //Obtenemos la signatura del método según los datos de la llamada
-            String signature = node.getName() + "(";
-            for (int i = 0; i < node.getArgs().size(); i++){
-                if (node.getArgs().size() > 1 && i != 0){
-                    signature = signature + ",";
-                }
-                if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code> que no esta actualmente soportado por JavaSS
-                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
-                    String typeAlone = typeOfTheNode.describe().substring(typeOfTheNode.describe().lastIndexOf(".")+1,typeOfTheNode.describe().indexOf("["));
-                    signature = signature + typeAlone;
-
-                }else {
-                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
-                    signature = signature + typeOfTheNode.describe();
-                }
-
-            }
-            signature = signature + ")";
-            return signature;
-        }
-
         public void setActualSearch(XmlManager.SinkDescription sink){
-
             actualSink = sink;
             actualSearchComplete = sink.getID();
-            actualSearchName = actualSearchComplete.substring(actualSearchComplete.lastIndexOf(".") + 1, actualSearchComplete.indexOf("("));
         }
 
         public void setTypeSolver(CombinedTypeSolver newtypeSolver){
