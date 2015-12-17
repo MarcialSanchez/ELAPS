@@ -80,21 +80,26 @@ public class HistoryNode {
         return level == 0;
     }
 
-    public void print(){
+    public void printHistoryInConsole(){
         String tabulation = "";
         for(Integer nTAb=0;nTAb<level;nTAb++){
             tabulation = tabulation+"   ";
         }
-            if( expression!=null) {
-                System.out.println(tabulation + " - "  + expression.toString() + " - " + nodeType);
-                if(isEndNode()){
-                    System.out.println(tabulation + " - Poisoned end: " + isPoisoned());
-                }
-            }else{
-                System.out.println("Start");
+        if( level==1){
+            System.out.println("");
+        }
+        if( expression!=null) {
+            String output = tabulation + " - "  + expression.toString() + " - " + nodeType;
+            if(isEndNode()){
+                output = output + " -> Poisoned end: " + isPoisoned();
             }
+            System.out.println(output);
+
+        }else{
+            System.out.println("Start Propagation tree: ");
+        }
         for(HistoryNode child : children){
-            child.print();
+            child.printHistoryInConsole();
         }
     }
 }

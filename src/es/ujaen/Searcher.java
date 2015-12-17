@@ -1,10 +1,9 @@
 package es.ujaen;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.ArrayAccessExpr;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import es.ujaen.Exceptions.NoFilesInPathException;
 import me.tomassetti.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -126,10 +125,10 @@ public class Searcher {
         @Override
         public void visit(MethodCallExpr node, Object arg) {
             MethodUsage solvedMethod = null;
-            if(node.getArgs().size()>0) {
-                System.out.println(node.toString());
-                System.out.println(node.getArgs().get(0).getClass());
-            }
+//            if(node.getArgs().size()>0) { //Para comprobar el tipo de los argumentos
+//                System.out.println(node.toString());
+//                System.out.println(node.getArgs().get(0).getClass());
+//            }
             if(actualSearchName.equals(node.getName())) {
                 try {
                     solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
@@ -213,26 +212,59 @@ public class Searcher {
 
     }
 
-    public static List<AssignExpr> searchAssignments(NameExpr expression, SearchMatch match){
-        List<AssignExpr> ourAssigns = new ArrayList<>();
+    public static List<Node> searchAssignments(NameExpr expression, SearchMatch match){
+        List<Node> ourAssigns = new ArrayList<>();
 
         AssignVisitor visitor = new AssignVisitor();
         visitor.visit(match.getcUnit(), null);
-        List<AssignExpr> allAssigns = visitor.getList();  //Obtenemos todas las expresiones de asignación en el mismo CUnit donde tenemos el nombre
-        for(AssignExpr expr : allAssigns){
-            //todo continuar aqui
+        List<Node> allAssigns = visitor.getList();  //Obtenemos todas las expresiones de asignación en el mismo CUnit donde tenemos el nombre
+        for(Node assign : allAssigns){
+            if(checkPreviousAssignation(expression, assign)){
+                ourAssigns.add(assign);
+            }
         }
+
         return ourAssigns;
+    }
+    private static Boolean checkPreviousAssignation(NameExpr expression, Node node){
+
+        Integer lineOfTheName = expression.getBeginLine();
+        Integer lineOfTheAssignment = node.getBeginLine();
+        if (lineOfTheAssignment < lineOfTheName) {
+
+            if (node instanceof AssignExpr) {
+                AssignExpr assign = (AssignExpr) node;
+                if (expression.getName().equals(assign.getTarget().toString())) {
+                    return true;
+
+                }
+            }
+            if (node instanceof VariableDeclarator){
+                VariableDeclarator declaration = (VariableDeclarator) node;
+                if (expression.getName().equals(declaration.getId().getName())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static class AssignVisitor extends VoidVisitorAdapter{
-        private List<AssignExpr> expressionsFound = new ArrayList<>();
+        private List<Node> expressionsFound = new ArrayList<>();
 
         public void visit(AssignExpr node, Object arg){
             expressionsFound.add(node);
         }
 
-        public List<AssignExpr> getList(){
+        public void visit(VariableDeclarator node, Object arg){
+
+            if(node.getId() != null){
+                expressionsFound.add(node);
+            }
+        }
+
+        public List<Node> getList(){
+
             return expressionsFound;
         }
     }

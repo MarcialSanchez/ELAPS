@@ -2,9 +2,7 @@ package es.ujaen;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import es.ujaen.Exceptions.NoFilesInPathException;
-import javassist.expr.MethodCall;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ public class Engine {
                 matches.addAll(actualSinkMatches);
             }
         }
-        System.out.println(matches.size());
+        System.out.println("Sink Methods found: "+matches.size());
         System.out.println("End Sink Search");
 
         if(!matches.isEmpty()){
@@ -56,7 +54,7 @@ public class Engine {
             if(masterRoot.getChildren().size() != matches.size()){
                 System.out.println("Something happend in the propagation");
             }else{
-                masterRoot.print();
+                masterRoot.printHistoryInConsole();
                 System.out.println("Propagation end correctly");
             }
         }else{
