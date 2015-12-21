@@ -12,32 +12,25 @@ import java.util.List;
 
 public class HistoryNode {
 
+    public static final int NOT_END = 0;
+    public static final int NOT_POISONED = 1;
+    public static final int POISONED = 2;
+    public static final int CANT_CONTINUE = 3;
+
     private HistoryNode parent;
     private List<HistoryNode> children = new ArrayList<>();
     private Node expression;
     private String nodeType ;
     private Integer level;
-    private Boolean poisoned;
-    private Boolean endNode;
+    private int historyType;
 
     public HistoryNode(){
         this.level = 0;
     }
-    public HistoryNode(HistoryNode parent, Node expression, String nodeType, Boolean poisoned) {
+    public HistoryNode(HistoryNode parent, Node expression, String nodeType, int historyType) {
         this.parent = parent;
         parent.addChildren(this);
-        this.endNode = true;
-        this.poisoned = poisoned;
-        this.level = parent.getLevel()+1;
-        this.expression = expression;
-        this.nodeType = nodeType;
-    }
-
-    public HistoryNode(HistoryNode parent, Node expression, String nodeType) {
-        this.parent = parent;
-        parent.addChildren(this);
-        this.endNode = false;
-        this.poisoned = null;
+        this.historyType = historyType;
         this.level = parent.getLevel()+1;
         this.expression = expression;
         this.nodeType = nodeType;
@@ -61,11 +54,11 @@ public class HistoryNode {
     }
 
     public Boolean isPoisoned() {
-        return poisoned;
+        return historyType==2;
     }
 
     public Boolean isEndNode(){
-        return endNode;
+        return historyType == 1 || historyType == 2;
     }
 
     public Integer getLevel(){
@@ -91,7 +84,12 @@ public class HistoryNode {
         if( expression!=null) {
             String output = tabulation + " - "  + expression.toString() + " - " + nodeType;
             if(isEndNode()){
-                output = output + " -> Poisoned end: " + isPoisoned();
+                if(historyType == 3){
+                    output = output + " Can't continue; Any declaration of the method found";
+                }else{
+                    output = output + " -> Poisoned end: " + isPoisoned();
+                }
+
             }
             System.out.println(output);
 

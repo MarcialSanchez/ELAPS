@@ -1,6 +1,7 @@
 package es.ujaen;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -17,6 +18,12 @@ public class CompilationUnitManager {
     static Map<CompilationUnit, DeclarationInfo> cunitsinfo = new HashMap<CompilationUnit, DeclarationInfo>();
     private static final Logger log = Logger.getLogger( CompilationUnitManager.class.getName() );
 
+    public static CompilationUnit getCompilationUnitFromNode(Node node){
+        while(!(node instanceof CompilationUnit)){
+            node = node.getParentNode();
+        }
+        return (CompilationUnit)node;
+    }
 
     public static DeclarationInfo getCUnitInfo(CompilationUnit cunit) {
         DeclarationInfo info = cunitsinfo.get(cunit);
@@ -29,7 +36,6 @@ public class CompilationUnitManager {
         }
         return info;
     }
-
 
     private static class DeclarationFinderVisitor extends VoidVisitorAdapter {
 

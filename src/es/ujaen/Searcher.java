@@ -125,8 +125,23 @@ public class Searcher {
 //                System.out.println(node.getArgs().get(0).getClass());
 //            }
         String actualSearchName = getNameFromQualifiedName(qNameForSearch);
+
         if(actualSearchName.equals(node.getName())) {
-            try {
+            SolvedMethodName methodName = getSolvedMethodName(node);
+            if(methodName != null){
+                if(methodName.isqualifiedName()){
+                    String qualifiedName = methodName.toString();
+                    if (qNameForSearch.equals(qualifiedName)) {
+                        return new SearchMatch(qualifiedName, node, actualCUnit, xmlDescriptor, true);
+                    }
+                }else{
+                    String signature = methodName.toString();
+                    if(actualSearchName.equals(signature)){
+                        return new SearchMatch(signature,node,actualCUnit, xmlDescriptor, false);
+                    }
+                }
+            }
+            /*try {
                 solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
 
                 String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
@@ -148,6 +163,43 @@ public class Searcher {
                 }catch(RuntimeException r){
                     //System.out.println("RuntimeException resolving node - "+node.toString());
                 }
+            }*/
+        }
+        return null;
+    }
+    public static class SolvedMethodName{
+        String methodName;
+        Boolean qualifiedName;
+        public SolvedMethodName(String _methodName, Boolean _qualifiedName){
+            methodName = _methodName;
+            qualifiedName = _qualifiedName;
+        }
+        public Boolean isqualifiedName(){
+            return qualifiedName;
+        }
+        public String toString(){
+            return methodName;
+        }
+    }
+    private static SolvedMethodName getSolvedMethodName(MethodCallExpr node){
+        MethodUsage solvedMethod = null;
+        try {
+            solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
+
+            String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
+                return new SolvedMethodName(qualifiedName, true);
+        } catch (Exception e) {                 //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
+            String signature = null;
+            try {
+                signature = getMethodSignatureFromCall(node);
+                    return new SolvedMethodName(signature, false);
+            }catch(UnsolvedTypeException | UnsolvedSymbolException u){
+                //e.printStackTrace();  //TODO resolver estas excepciones
+                //System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
+            }catch(UnsupportedOperationException unsop){
+                //System.out.println("UnsuportedOperationException - "+node.toString());
+            }catch(RuntimeException r){
+                //System.out.println("RuntimeException resolving node - "+node.toString());
             }
         }
         return null;
@@ -176,14 +228,19 @@ public class Searcher {
             if (node.getArgs().size() > 1 && i != 0){
                 signature = signature + ",";
             }
-            if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code> que no esta actualmente soportado por JavaSS
-                TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
-                String typeAlone = typeOfTheNode.describe().substring(typeOfTheNode.describe().lastIndexOf(".")+1,typeOfTheNode.describe().indexOf("["));
-                signature = signature + typeAlone;
+            //todo - Solucionar problema de Java-Symbol cuando argumento es MethodCallExpr
+            if(node.getArgs().get(i) instanceof MethodCallExpr) {
 
-            }else {
-                TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
-                signature = signature + typeOfTheNode.describe();
+            }else{
+                if(node.getArgs().get(i) instanceof ArrayAccessExpr){  //TODO- Comprobar futuras actus de J-S-S; esto soluciona los problemas de Java-symbol-solver con los accesos a un array usando corchetes <code>array[0]</code> que no esta actualmente soportado por JavaSS
+                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i).getChildrenNodes().get(0));
+                    String typeAlone = typeOfTheNode.describe().substring(typeOfTheNode.describe().lastIndexOf(".")+1,typeOfTheNode.describe().indexOf("["));
+                    signature = signature + typeAlone;
+
+                }else {
+                    TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
+                    signature = signature + typeOfTheNode.describe();
+                }
             }
 
         }
@@ -199,7 +256,6 @@ public class Searcher {
 
         @Override
         public void visit(MethodCallExpr node, Object arg) {
-
             SearchMatch match = checkMethodCallExprAgainstMethodQualifiedName(actualSearchComplete, node, actualCUnit, actualSink);
             if(match != null){
                 matches.add(match);
