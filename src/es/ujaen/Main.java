@@ -11,6 +11,8 @@ public class Main {
             //   System.out.println(cu.getChildrenNodes().size());
         try {
             Engine appEngine = new Engine("/media/Almacenamiento/Drive/Ujaen/Septimo/Proyecto/Pruebas/cutre");
+            //Engine appEngine = new Engine("/media/Almacenamiento/Drive/Ujaen/Septimo/Proyecto/Pruebas/cutre");
+            //Engine appEngine = new Engine("/media/Almacenamiento/Drive/Ujaen/Septimo/Proyecto/SRCPeliculasBD");
             appEngine.run();
         }catch(ParseException e){
             System.out.println("Error al Parsear el código fuente, puede deberse a un fallo de compilación.");
