@@ -4,8 +4,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
-import me.tomassetti.symbolsolver.model.declarations.MethodDeclaration;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.ast.body.MethodDeclaration;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -92,38 +95,63 @@ public class Propagator {
     public static void processMethodCall(MethodCallExpr expression, String type, HistoryNode parent){
         //TODO
         CompilationUnit cUnit = CompilationUnitManager.getCompilationUnitFromNode(expression);
-        for(XmlManager.SourceDescription source : sources){
+        /**
+         * Comprobar si el método corresponde con algun método SOURCE
+         */
+        for(XmlManager.SourceDescription source : sources) {
             SearchMatch sourceMatch = Searcher.checkMethodCallExprAgainstMethodQualifiedName(source.getID(), expression, cUnit, source);
-            if(sourceMatch != null){
+            if (sourceMatch != null) {
                 HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.POISONED);
-//            }else{
-//                MethodDeclaration declaration = searchMethodDeclaration();
-//                if(declaration != null) {
-//                   HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
-//                    returns = obtainMethodReturns();
-//                    for (ret: returns) {
-//                        processExpression(ret, "", actualHistoryNode);
-//                    }
-//                }else{
-//
-//                    for(XmlManager.DerivationDescription derivation : derived){
-//                        SearchMatch derivationMatch = Searcher.checkMethodCallExprAgainstMethodQualifiedName(derivation.getID(), expression, cUnit, source);
-//                        if(derivationMatch != null){
-//                            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
-//                            processExpression(expression.getParentNode(),"",actualHistoryNode);
-//                        }else{
-//                           HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.CANT_CONTINUE);
-//                        }
-//                    }
-//                }
+                return;
             }
         }
+        /**
+         * Si el método no corresponde a ningún método SOURCE buscamos la declaración del método y analizamos todos sus returns
+         */
+        MethodDeclaration declaration = CompilationUnitManager.getMethodDeclaration(expression.getName());
+        if(declaration != null) {
+
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+            List<ReturnStmt> returns = getMethodReturns(declaration);
+            for (ReturnStmt ret: returns) {
+                processExpression(ret.getExpr(), "", actualHistoryNode);
+            }
+            return;
+        }
+        /**
+         * Si no encontramos declaración del método verificamos si es alguno de los métodos DERIVED, si lo es pasamos a procesar la variable que llama a este método
+         */
+        for(XmlManager.DerivationDescription derivation : derived){
+            SearchMatch derivationMatch = Searcher.checkMethodCallExprAgainstMethodQualifiedName(derivation.getID(), expression, cUnit, derivation);
+            if(derivationMatch != null){
+                HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.DERIVATION);
+                processExpression(expression.getChildrenNodes().get(0),"",actualHistoryNode);
+                return;
+            }
+        }
+        /**
+         * Si no se da ninguno de los casos anteriores entonces paramos el análisis en este punto e indicamos en el historial que no se ha podido profundizar
+         */
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.CANT_CONTINUE);
     }
 
     public static void setDescriptions(Collection<XmlManager.SourceDescription> newSources, Collection<XmlManager.DerivationDescription> newDerived, Collection<XmlManager.SafeDescription> newSafes){
         sources = newSources;
         derived = newDerived;
         safes = newSafes;
+    }
+
+    private static List<ReturnStmt> getMethodReturns(Node node){
+
+        List<ReturnStmt> returns = new ArrayList<>();
+        if(node instanceof ReturnStmt){
+            returns.add((ReturnStmt)node);
+        }else{
+            for(Node child : node.getChildrenNodes()){
+                returns.addAll(getMethodReturns(child));
+            }
+        }
+        return returns;
     }
 
 }

@@ -32,10 +32,10 @@ public class Searcher {
     Searcher(){
     }
 
-    public static Collection searchReferences(File projectRoot, List<CompilationUnit> cUnits, XmlManager.SinkDescription sink){
+    public static Collection searchReferences(File projectRoot,File javaRoot, List<CompilationUnit> cUnits, XmlManager.SinkDescription sink){
 
         Collection<SearchMatch> matches = new ArrayList<SearchMatch>();
-        generateTypeSolver(projectRoot);
+        generateTypeSolver(projectRoot, javaRoot);
         MethodCallVisitor visitor = new MethodCallVisitor();   //Instanciamos el visitor que se encargará de recorrer los nodos.
         visitor.setActualSearch(sink);                   //Asignamos la busqueda actual extraida del fichero sink.xml.
         visitor.setTypeSolver(typeSolver);                     //Asignamos el typeSolver que hemos configurado anteriormente.
@@ -51,20 +51,19 @@ public class Searcher {
         return matches;
     }
 
-    private static CombinedTypeSolver generateTypeSolver(File projectRoot){
+    private static CombinedTypeSolver generateTypeSolver(File projectRoot, File javaRoot){
         if(typeSolver == null){
             typeSolver = new CombinedTypeSolver();  //Typesolver es la clase que contendrá todos los lugares donde se buscaran las clases importadas
             typeSolver.add(new JreTypeSolver());                       // Añadimos el JRE por defecto para las clases que incluye Java
 
             try {
                 List<File> jarFiles = lookPathForJarFiles(projectRoot);
+                jarFiles.addAll(loadLocalJars());
                 for (File jar : jarFiles) {
                     typeSolver.add(new JarTypeSolver(jar.getAbsolutePath())); //Buscamos y añadimos al typesolver todos los JAR que encontremos dentro del proyecto.
                 }
-                List<File> srcFolders = lookPathForSourceFolders(projectRoot);
-                for (File src : srcFolders) {
-                    typeSolver.add(new JavaParserTypeSolver(src.getAbsoluteFile()));  //Añadimos las carpetas "src" con los ficheros fuente del proyecto al typesolver.
-                }
+                typeSolver.add(new JavaParserTypeSolver(javaRoot.getAbsoluteFile()));  //Añadimos las carpetas "src" con los ficheros fuente del proyecto al typesolver.
+
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (NoFilesInPathException e) {
@@ -72,6 +71,10 @@ public class Searcher {
             }
         }
         return typeSolver;
+    }
+
+    private static List<File> loadLocalJars() throws NoFilesInPathException{
+        return lookPathForJarFiles(new File("resources/APIs/tomcat"));
     }
 
     private static List<File> lookPathForJarFiles(File directory) throws NoFilesInPathException {
@@ -125,51 +128,17 @@ public class Searcher {
 //          System.out.println(node.getArgs().get(0).getClass());
 //        }
         String actualSearchName = getNameFromQualifiedName(qNameForSearch);
-
         if(actualSearchName.equals(node.getName())) {
-            SolvedMethodName methodName = ResolveMethodName(node);
+            //System.out.println(node.getName()+ " _>  "+ actualSearchName);
+            String methodName = ResolveMethodName(node);
             if(methodName != null){
-                if(methodName.isqualifiedName()){
-                    String qualifiedName = methodName.toString();
-                    if (qNameForSearch.equals(qualifiedName)) {
-                        return new SearchMatch(qualifiedName, node, actualCUnit, xmlDescriptor, true);
-                    }
-                }else{
-                    String signature = methodName.toString();
-                    if(actualSearchName.equals(signature)){
-                        return new SearchMatch(signature,node,actualCUnit, xmlDescriptor, false);
-                    }
+                if (qNameForSearch.equals(methodName)) {
+                    return new SearchMatch(methodName, node, actualCUnit, xmlDescriptor, true);
                 }
             }
-        }
-        return null;
-    }
-    public static class SolvedMethodName{
-        String methodName;
-        Boolean qualifiedName;
-        public SolvedMethodName(String _methodName, Boolean _qualifiedName){
-            methodName = _methodName;
-            qualifiedName = _qualifiedName;
-        }
-        public Boolean isqualifiedName(){
-            return qualifiedName;
-        }
-        public String toString(){
-            return methodName;
-        }
-    }
-    private static SolvedMethodName ResolveMethodName(MethodCallExpr node){
-        MethodUsage solvedMethod = null;
-        try {
-            solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
-
-            String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
-                return new SolvedMethodName(qualifiedName, true);
-        } catch (Exception e) {                 //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
-            String signature = null;
+            String nodesignature = null;   //Si falla el análisis de tipo, comprobamos simplemente el nombre y los parametros
             try {
-                signature = getMethodSignatureFromCall(node);
-                    return new SolvedMethodName(signature, false);
+                nodesignature = getMethodSignatureFromCall(node);
             }catch(UnsolvedTypeException | UnsolvedSymbolException u){
                 //e.printStackTrace();  //TODO resolver estas excepciones
                 //System.out.println("UnsolvedException - "+node.toString()+" - "+node.getArgs().size()+" - "+node.getTypeArgs().toString());
@@ -178,9 +147,36 @@ public class Searcher {
             }catch(RuntimeException r){
                 //System.out.println("RuntimeException resolving node - "+node.toString());
             }
+            //if(xmlDescriptor instanceof XmlManager.DerivationDescription){
+            //}
+            String methodSearchSignature = getMethodSignatureFromQualifiedName(qNameForSearch);
+
+            if(methodSearchSignature.equals(nodesignature)){
+                return new SearchMatch(nodesignature,node,actualCUnit, xmlDescriptor, false);
+            }
         }
         return null;
     }
+
+    public static String ResolveMethodName(MethodCallExpr node){
+        MethodUsage solvedMethod = null;
+        solvedMethod = getMethodDeclaration(node); //Intentamos resolver el tipo del nodo usando Java-symbol-solver, esta manera es la más eficaz de identificar un método pero no siempre es posible.
+        if (solvedMethod != null) {
+            String qualifiedName = getMethodQualifiedNameFromDeclaration(solvedMethod);
+            return qualifiedName;
+        }
+        return null;
+    }
+
+    public static MethodUsage getMethodDeclaration(MethodCallExpr node){
+        try{
+            return  JavaParserFacade.get(typeSolver).solveMethodAsUsage(node);
+
+        }catch (Exception e){
+            return null;
+        }
+    }
+
     public static String getNameFromQualifiedName(String qName){
        return qName.substring(qName.lastIndexOf(".") + 1, qName.indexOf("("));
     }
@@ -214,7 +210,7 @@ public class Searcher {
                     TypeUsage typeOfTheNode = JavaParserFacade.get(typeSolver).getType(node.getArgs().get(i));  //Dado un nodo 'Expression' obtenemos su tipo utilizando la herramienta Java-symbol-solver
                     signature = signature + typeOfTheNode.describe();
                 }catch (Exception e){
-                    e.printStackTrace();
+                    //TODO "Algunos casos específicos fallan al tratar de resolverse con JSS y saltan aqui"
                 }
             }
         }
@@ -222,9 +218,12 @@ public class Searcher {
         return signature;
     }
 
+    private static String getMethodSignatureFromQualifiedName(String qName){
+        return qName.substring(qName.lastIndexOf(".")+1,qName.lastIndexOf(")")+1);
+    }
+
     private static String getReturnType(MethodCallExpr node) {
         MethodUsage solvedMethod = JavaParserFacade.get(typeSolver).solveMethodAsUsage(node);
-        System.out.println(solvedMethod.getDeclaration().getReturnType().describe());
         return solvedMethod.getDeclaration().getReturnType().describe();
     }
 

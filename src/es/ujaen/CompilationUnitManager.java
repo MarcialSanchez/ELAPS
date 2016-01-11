@@ -3,7 +3,9 @@ package es.ujaen;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import me.tomassetti.symbolsolver.model.declarations.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +19,7 @@ public class CompilationUnitManager {
 
     static Map<CompilationUnit, DeclarationInfo> cunitsinfo = new HashMap<CompilationUnit, DeclarationInfo>();
     private static final Logger log = Logger.getLogger( CompilationUnitManager.class.getName() );
-
+    static Map<String, MethodDeclaration> allMethodDeclarations = new HashMap<>();
     public static CompilationUnit getCompilationUnitFromNode(Node node){
         while(!(node instanceof CompilationUnit)){
             node = node.getParentNode();
@@ -25,6 +27,9 @@ public class CompilationUnitManager {
         return (CompilationUnit)node;
     }
 
+    public static MethodDeclaration getMethodDeclaration(String name){
+        return allMethodDeclarations.get(name);
+    }
     public static DeclarationInfo getCUnitInfo(CompilationUnit cunit) {
         DeclarationInfo info = cunitsinfo.get(cunit);
         if(info == null) {
@@ -33,6 +38,7 @@ public class CompilationUnitManager {
             info = visitor.getInfo();
             // save for future use
             cunitsinfo.put(cunit, info);
+            allMethodDeclarations.putAll(info.getMethodDeclarators());
         }
         return info;
     }
@@ -47,7 +53,6 @@ public class CompilationUnitManager {
         public void visit(MethodDeclaration node, Object arg) {
             log.log(Level.FINE, "NODO METODO VISITADO");
             fCurrentMethod = node;
-            System.out.println(node.getDeclarationAsString());
             info.setMethodDeclarator(node.getName(),node);
             super.visit(node, arg);
             fCurrentMethod = null;

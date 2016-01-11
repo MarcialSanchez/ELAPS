@@ -17,7 +17,7 @@ public class DeclarationInfo {
     private Map<String, Node> variablename2node = new HashMap<String, Node>();
     private HashMap<VariableDeclaratorId, Boolean> finalMap = new HashMap<VariableDeclaratorId, Boolean>();
     private HashMap<VariableDeclaratorId, Boolean> paramMap = new HashMap<VariableDeclaratorId, Boolean>();
-    private Map<String, Node> methodname2node = new HashMap<>();
+    private Map<String, MethodDeclaration> methodname2node = new HashMap<>();
 
     public void setVariableDeclarator(String name, Node node) {
         variablename2node.put(name, node);
@@ -49,13 +49,15 @@ public class DeclarationInfo {
         return var;
     }
 
-    public void setMethodDeclarator(String name, Node node){
+    public void setMethodDeclarator(String name, MethodDeclaration node){
         methodname2node.put(name,node);
     }
 
     public MethodDeclaration getMethodDeclarator(String name){
         return (MethodDeclaration) methodname2node.get(name);
     }
+
+    public Map<String,MethodDeclaration> getMethodDeclarators(){ return methodname2node; }
 
     public void setFinal(VariableDeclaratorId name) {
         finalMap.put(name, null);

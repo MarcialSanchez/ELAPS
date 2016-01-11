@@ -16,6 +16,7 @@ public class HistoryNode {
     public static final int NOT_POISONED = 1;
     public static final int POISONED = 2;
     public static final int CANT_CONTINUE = 3;
+    public static final int DERIVATION = 4;
 
     private HistoryNode parent;
     private List<HistoryNode> children = new ArrayList<>();
@@ -83,6 +84,9 @@ public class HistoryNode {
         }
         if( expression!=null) {
             String output = tabulation + " - "  + expression.toString() + " - " + nodeType;
+            if(historyType == 4){
+                output = output + " - " + "Derivation Method";
+            }
             if(isEndNode()){
                 if(historyType == 3){
                     output = output + " Can't continue; Any declaration of the method found";

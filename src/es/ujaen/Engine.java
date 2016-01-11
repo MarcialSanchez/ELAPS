@@ -20,8 +20,8 @@ public class Engine {
     private static final String SAFES_XML = "safes.xml";
     private static final String DERIVED_XML = "derived.xml";
 
-    Engine(String rootUrl) throws Exception{
-        project = new Project(rootUrl);
+    Engine(String projectRootUrl, String javaRootUrl) throws Exception{
+        project = new Project(projectRootUrl, javaRootUrl);
     }
 
     void run(){
@@ -29,7 +29,7 @@ public class Engine {
         Collection<SearchMatch> matches = new ArrayList<>();
         for(XmlManager.SinkDescription sink : sinks){
             //System.out.println("Looking for: "+sink.getID());
-            Collection<SearchMatch> actualSinkMatches = Searcher.searchReferences(project.getProjectRoot(), project.getCompilationUnits(), sink);
+            Collection<SearchMatch> actualSinkMatches = Searcher.searchReferences(project.getProjectRoot(), project.getJavaRoot(), project.getCompilationUnits(), sink);
             if(actualSinkMatches != null){
                 matches.addAll(actualSinkMatches);
             }
@@ -68,11 +68,13 @@ public class Engine {
      */
     private class Project{
         private File projectRoot;
+        private File javaRoot;
         private List<File> javaFiles ;
         private List<CompilationUnit> cUnits;
 
-        Project(String _path)throws Exception{
-            projectRoot = new File(_path);
+        Project(String _projectPath, String _javaPath)throws Exception{
+            projectRoot = new File(_projectPath);
+            javaRoot = new File(_javaPath);
             javaFiles = lookPathForJavaFiles(projectRoot);
             cUnits = parseJavaFilesList(javaFiles);
         }
@@ -82,6 +84,7 @@ public class Engine {
             for(File file : javaFiles) {
                 CompilationUnit cu = JavaParser.parse(file);    // parse the file
                 cUnitsList.add(cu);
+                CompilationUnitManager.getCUnitInfo(cu);
             }
             return cUnitsList;
         }
@@ -108,6 +111,8 @@ public class Engine {
         public File getProjectRoot() {
             return projectRoot;
         }
+        
+        public File getJavaRoot() { return javaRoot; }
 
         public void setProjectRoot(String projectPath) {
             projectRoot = new File(projectPath);
