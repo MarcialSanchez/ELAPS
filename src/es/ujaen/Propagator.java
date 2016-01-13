@@ -36,6 +36,7 @@ public class Propagator {
     }
     public static void processExpression(Node expression, String type, HistoryNode parent){
 
+        System.out.println(expression.toString());
         if(expression instanceof LiteralExpr){
             processLiteral((LiteralExpr)expression, "LiteralExpr", parent);
         }
@@ -60,14 +61,18 @@ public class Propagator {
         }
     }
 
-    public static void processLiteral(LiteralExpr expression, String type, HistoryNode parent){  // Expresiones literales: "Cadena" , 1, 1.22
+    public static void processLiteral(LiteralExpr expression, String type, HistoryNode parent){
         /**
          * Con una expresion literal detenemos la propagación y se considera no contaminado
+         * Expresiones literales: "Cadena", 1, 1.22
          */
         HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_POISONED);
     }
 
-    public static void processBinary(BinaryExpr expression, String type, HistoryNode parent){    // Expresiones Binarias, como una concatenación de cadenas
+    public static void processBinary(BinaryExpr expression, String type, HistoryNode parent){
+        /**
+         * Expresiones Binarias, como una concatenación de cadenas
+         */
         HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
         for(Node component : expression.getChildrenNodes()){
             processExpression(component, "", actualHistoryNode);
@@ -87,13 +92,21 @@ public class Propagator {
         processExpression(expression.getValue(), "" ,actualHistoryNode);
     }
 
+    //TODO Procesar Parametro
+
     public static void processVariableDeclarator(VariableDeclarator expression, String type, HistoryNode parent){
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
-        processExpression(expression.getInit(), "" ,actualHistoryNode);
+        if(expression.getInit() != null) {
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+            processExpression(expression.getInit(), "", actualHistoryNode);
+        }
     }
 
     public static void processMethodCall(MethodCallExpr expression, String type, HistoryNode parent){
-        //TODO
+        //System.out.println(expression.toString());
+        if(parent.containsAncestor(expression)){
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.RECURSION);
+            return;
+        }
         CompilationUnit cUnit = CompilationUnitManager.getCompilationUnitFromNode(expression);
         /**
          * Comprobar si el método corresponde con algun método SOURCE
@@ -147,8 +160,10 @@ public class Propagator {
         if(node instanceof ReturnStmt){
             returns.add((ReturnStmt)node);
         }else{
-            for(Node child : node.getChildrenNodes()){
-                returns.addAll(getMethodReturns(child));
+            if(!node.getChildrenNodes().isEmpty()) {
+                for (Node child : node.getChildrenNodes()) {
+                    returns = getMethodReturns(child);
+                }
             }
         }
         return returns;

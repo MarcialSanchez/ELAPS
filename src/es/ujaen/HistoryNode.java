@@ -17,6 +17,7 @@ public class HistoryNode {
     public static final int POISONED = 2;
     public static final int CANT_CONTINUE = 3;
     public static final int DERIVATION = 4;
+    public static final int RECURSION = 5;
 
     private HistoryNode parent;
     private List<HistoryNode> children = new ArrayList<>();
@@ -74,6 +75,27 @@ public class HistoryNode {
         return level == 0;
     }
 
+    public Boolean containsAncestor(Node node){
+
+        if(parent.getLevel()== 0){
+            return false;
+        }
+
+        if(parent.isSameNode(node)) {
+            return true;
+        } else {
+            return getParent().containsAncestor(node);
+        }
+    }
+    private Boolean isSameNode(Node node){
+        try {
+            if (expression.hashCode() != node.hashCode()) return false;
+        }catch (Exception e){
+            System.out.println();
+        }
+        if(expression.getBeginLine() != node.getBeginLine()) return false;
+        return true;
+    }
     public void printHistoryInConsole(){
         String tabulation = "";
         for(Integer nTAb=0;nTAb<level;nTAb++){
@@ -84,11 +106,14 @@ public class HistoryNode {
         }
         if( expression!=null) {
             String output = tabulation + " - "  + expression.toString() + " - " + nodeType;
-            if(historyType == 4){
+            if(historyType == DERIVATION){
                 output = output + " - " + "Derivation Method";
             }
+            if(historyType == RECURSION){
+                output = output + " - " + "Detected Recursive loop";
+            }
             if(isEndNode()){
-                if(historyType == 3){
+                if(historyType == CANT_CONTINUE){
                     output = output + " Can't continue; Any declaration of the method found";
                 }else{
                     output = output + " -> Poisoned end: " + isPoisoned();

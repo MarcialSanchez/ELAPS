@@ -261,6 +261,7 @@ public class Searcher {
     }
 
     public static List<Node> searchAssignments(NameExpr expression, SearchMatch match){
+        //TODO añadir a la lista las declaraciones de parámetros
         List<Node> ourAssigns = new ArrayList<>();
 
         AssignVisitor visitor = new AssignVisitor();
