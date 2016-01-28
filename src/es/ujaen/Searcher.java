@@ -96,27 +96,6 @@ public class Searcher {
         return jarFiles;
     }
 
-    private static List<File> lookPathForSourceFolders(File directory) throws NoFilesInPathException { //TODO la ruta se la pediremos al usuario
-        File[] files= directory.listFiles();
-        if(files == null){
-            throw new NoFilesInPathException();
-        }
-        List<File> srcFolders = new ArrayList<>();
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                if (file.getName().equals("java")) {
-                    srcFolders.add(file);
-                }else{
-                    List<File> tmpList = lookPathForSourceFolders(file);
-                    srcFolders.addAll(tmpList);
-                }
-
-            }
-        }
-        return srcFolders;
-    }
-
     public static SearchMatch checkMethodCallExprAgainstMethodQualifiedName(String qNameForSearch,
                                                                             MethodCallExpr node,
                                                                             CompilationUnit actualCUnit,
@@ -275,6 +254,7 @@ public class Searcher {
 
         return ourAssigns;
     }
+
     private static Boolean checkPreviousAssignation(NameExpr expression, Node node){
 
         Integer lineOfTheName = expression.getBeginLine();

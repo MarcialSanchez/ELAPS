@@ -36,7 +36,6 @@ public class Propagator {
     }
     public static void processExpression(Node expression, String type, HistoryNode parent){
 
-        System.out.println(expression.toString());
         if(expression instanceof LiteralExpr){
             processLiteral((LiteralExpr)expression, "LiteralExpr", parent);
         }
