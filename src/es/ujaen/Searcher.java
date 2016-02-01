@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by blitzer on 20/11/15.
+ * Created by Marcial J. Sánchez Santiago on 20/11/15.
  */
 public class Searcher {
     static private CombinedTypeSolver typeSolver = null;

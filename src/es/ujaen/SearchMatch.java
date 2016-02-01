@@ -7,7 +7,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import javax.print.attribute.standard.Sides;
 
 /**
- * Created by blitzer on 3/12/15.
+ * Created by Marcial J. Sánchez Santiago on 3/12/15.
  */
 public class SearchMatch {
     private String name;

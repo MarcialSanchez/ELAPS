@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 /**
- * Created by blitzer on 16/11/15.
+ * Created by Marcial J. Sánchez Santiago on 16/11/15.
  */
 public class XmlManager {
 

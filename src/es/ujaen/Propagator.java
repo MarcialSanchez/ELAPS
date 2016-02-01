@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by blitzer on 11/12/15.
+ * Created by Marcial J. Sánchez Santiago on 11/12/15.
  */
 public class Propagator {
 

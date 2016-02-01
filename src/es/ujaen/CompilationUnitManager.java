@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by blitzer on 30/10/15.
+ * Created by Marcial J. Sánchez Santiago on 30/10/15.
  */
 public class CompilationUnitManager {
 
