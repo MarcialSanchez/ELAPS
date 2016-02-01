@@ -1,4 +1,4 @@
-package es.ujaen;
+package es.ujaen.model;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

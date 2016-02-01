@@ -1,10 +1,7 @@
-package es.ujaen;
+package es.ujaen.model;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-
-import javax.print.attribute.standard.Sides;
 
 /**
  * Created by Marcial J. Sánchez Santiago on 3/12/15.

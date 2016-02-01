@@ -1,10 +1,12 @@
-package es.ujaen;
+package es.ujaen.model;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import es.ujaen.Exceptions.NoFilesInPathException;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.List;
 /**
  * Created by Marcial J. Sánchez Santiago on 16/11/15.
  */
-public class Engine {
+public class Engine implements EngineInterface{
 
     private Project project;
     private static final String SINKS_XML = "sinks.xml";
@@ -20,11 +22,20 @@ public class Engine {
     private static final String SAFES_XML = "safes.xml";
     private static final String DERIVED_XML = "derived.xml";
 
-    Engine(String projectRootUrl, String javaRootUrl) throws Exception{
-        project = new Project(projectRootUrl, javaRootUrl);
+    public void setProjectInfo(String projectRoot, String javaRoot){
+        project = new Project(projectRoot, javaRoot);
     }
 
-    void run(){
+    public String getProjectRootPath() throws IOException{
+        return project.getProjectRoot().getCanonicalPath();
+    }
+
+    public String getProjectJavaRootPath() throws IOException{
+        return project.getJavaRoot().getCanonicalPath();
+    }
+
+    public HistoryNode run() throws NoFilesInPathException, IOException, com.github.javaparser.ParseException{
+        project.parseProjectFiles();
         Collection<XmlManager.SinkDescription> sinks = XmlManager.readSinks(SINKS_XML);
         Collection<SearchMatch> matches = new ArrayList<>();
         for(XmlManager.SinkDescription sink : sinks){
@@ -52,14 +63,16 @@ public class Engine {
                 Propagator.processMatch(match,masterRoot);
             }
             if(masterRoot.getChildren().size() != matches.size()){
-                System.out.println("Something happend in the propagation");
+                System.out.println("Something happened in the propagation");
             }else{
                 masterRoot.printHistoryInConsole();
                 System.out.println("Propagation end correctly");
+                return masterRoot;
             }
         }else{
             System.out.println("Any vulnerable method found");
         }
+        return null;
     }
 
 
@@ -72,14 +85,17 @@ public class Engine {
         private List<File> javaFiles ;
         private List<CompilationUnit> cUnits;
 
-        Project(String _projectPath, String _javaPath)throws Exception{
+        Project(String _projectPath, String _javaPath){
             projectRoot = new File(_projectPath);
             javaRoot = new File(_javaPath);
+        }
+
+        public void parseProjectFiles() throws NoFilesInPathException, com.github.javaparser.ParseException, IOException{
             javaFiles = lookPathForJavaFiles(projectRoot);
             cUnits = parseJavaFilesList(javaFiles);
         }
 
-        private List<CompilationUnit> parseJavaFilesList(List<File> javaFiles) throws Exception{
+        private List<CompilationUnit> parseJavaFilesList(List<File> javaFiles) throws IOException, com.github.javaparser.ParseException{
             List<CompilationUnit> cUnitsList = new ArrayList<>();
             for(File file : javaFiles) {
                 CompilationUnit cu = JavaParser.parse(file);    // parse the file
@@ -117,6 +133,8 @@ public class Engine {
         public void setProjectRoot(String projectPath) {
             projectRoot = new File(projectPath);
         }
+
+        public void setJavaRoot(String javaPath) { javaRoot = new File(javaPath);}
 
         public List<File> getJavaFiles() {
             return javaFiles;

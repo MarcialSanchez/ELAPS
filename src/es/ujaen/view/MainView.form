@@ -52,6 +52,8 @@
                 <properties>
                   <background color="-12828863"/>
                   <editable value="false"/>
+                  <font name="Source Code Pro" size="14"/>
+                  <foreground color="-1"/>
                   <preferredSize width="960" height="100"/>
                 </properties>
               </component>

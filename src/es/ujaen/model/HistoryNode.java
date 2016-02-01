@@ -1,4 +1,4 @@
-package es.ujaen;
+package es.ujaen.model;
 
 import com.github.javaparser.ast.Node;
 

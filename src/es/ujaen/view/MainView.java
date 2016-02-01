@@ -1,63 +1,139 @@
 package es.ujaen.view;
 
+import es.ujaen.controller.AnalysisObserver;
+import es.ujaen.controller.ControllerInterface;
+import es.ujaen.model.EngineInterface;
+
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.tree.TreeModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
 /**
  * Created by Marcial J. Sánchez Santiago on 28/01/16.
  */
-public class MainView extends javax.swing.JFrame{
+public class MainView extends javax.swing.JFrame implements MainViewInterface, AnalysisObserver{
+    private String appVersion = " - ELAPS 1.0 -";
+
+    private EngineInterface engine;
+    private ControllerInterface controller;
+
+    private ProjectConfiguration newProjectDialog;
+    private ProjectConfiguration editProjectDialog;
+
     private JPanel rootPanel;
     private JTextPane consolePanel;
     private JTree detectionsTree;
     private JTextPane helpPanel;
 
-    public MainView(){
-        super("MainFrame");
+    public MainView(EngineInterface engine, ControllerInterface controller){
+        this.engine = engine;
+        this.controller = controller;
 
+        newProjectDialog = new ProjectConfiguration(this, true, controller);
+        editProjectDialog = new ProjectConfiguration(this, true, controller);
         setContentPane(rootPanel);
+        refreshTitle(appVersion);
         initComponents();
-
-        Dimension tamPantalla = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension tamVentana = this.getSize();
-
-        this.setLocation((tamPantalla.width-tamVentana.width)/2,
-                (tamPantalla.height-tamVentana.height)/2);
-
+        setWindowPosition();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
 
     }
 
+    private void refreshTitle(String title){
+        this.setTitle(title);
+    }
+
+    private void setWindowPosition(){
+        Dimension tamPantalla = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension tamVentana = this.getSize();
+
+        this.setLocation((tamPantalla.width-tamVentana.width)/2,
+                (tamPantalla.height-tamVentana.height)/2);
+    }
+
     private javax.swing.JMenuItem buttonNewProject;
     private javax.swing.JMenuItem buttonEditProject;
     private javax.swing.JMenuItem buttonExit;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenu menuProyect;
-    private javax.swing.JMenu menuRun;
+    private javax.swing.JMenu menuProject;
+    private javax.swing.JButton buttonRunAnalysis;
+
+    private StyledDocument consoleOutput;
+    private SimpleAttributeSet keyWord;
 
     private void initComponents() {
+        /**
+         * Creating components for the MENU bar
+         */
         jMenuBar1 = new javax.swing.JMenuBar();
-        menuProyect = new javax.swing.JMenu();
-        menuRun = new javax.swing.JMenu();
+        menuProject = new javax.swing.JMenu();
+        buttonRunAnalysis = new javax.swing.JButton();
+        buttonRunAnalysis.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestRunAnalysis();
+            }
+        });
         buttonExit = new javax.swing.JMenuItem();
         buttonNewProject = new javax.swing.JMenuItem();
+        buttonNewProject.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestNewProjectAction();
+            }
+        });
         buttonEditProject = new javax.swing.JMenuItem();
+        buttonEditProject.setEnabled(false);
+        buttonEditProject.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                requestEditProjectAction();
+            }
+        });
 
-        menuProyect.setText("Project");
+        menuProject.setText("Project");
         buttonExit.setText("Exit");
         buttonNewProject.setText("New Project");
         buttonEditProject.setText("Edit Project");
 
-        menuProyect.add(buttonNewProject);
-        menuProyect.add(buttonEditProject);
-        menuProyect.add(buttonExit);
+        menuProject.add(buttonNewProject);
+        menuProject.add(buttonEditProject);
+        menuProject.add(buttonExit);
 
-        jMenuBar1.add(menuProyect);
+        jMenuBar1.add(menuProject);
+        jMenuBar1.add(buttonRunAnalysis);
 
         setJMenuBar(jMenuBar1);
+
+        //Disable button until a project is added
+        disableRunAnalysisButton();
+        buttonRunAnalysis.setIcon(new javax.swing.ImageIcon("resources/icons/runEnabled.png"));
+        buttonRunAnalysis.setDisabledIcon(new javax.swing.ImageIcon("resources/icons/runDisabled.png"));
+
+        //Tree initialization
+        detectionsTree.setModel(null);
+
+        //Defining style and default text for the Console Panel
+        consoleOutput = consolePanel.getStyledDocument();
+        keyWord = new SimpleAttributeSet();
+        StyleConstants.setForeground(keyWord, Color.WHITE);
+        StyleConstants.setBackground(keyWord, Color.DARK_GRAY);
+        StyleConstants.setBold(keyWord, true);
+        try {
+            consoleOutput.insertString(0, "Wellcome to the ELAPS (Everywhere Lightweight Program for Security)\n", null);
+        }catch(Exception e) { System.out.println(e); }
+
+
 
         UIDefaults defs = UIManager.getDefaults();
         defs.put("consolePanel.background", new ColorUIResource(255, 255, 255));
@@ -65,4 +141,80 @@ public class MainView extends javax.swing.JFrame{
 
         pack();
     }
+    private void requestRunAnalysis(){
+        controller.runAnalysis();
+    }
+
+    private void requestNewProjectAction() {
+        newProjectDialog.setVisible(true);
+        buttonEditProject.setEnabled(true);
+        enableRunAnalysisButton();
+        refreshTitle(newProjectDialog.getProjectPathField()+appVersion);
+        appendConsoleMessages("Added Path for new project");
+        appendConsoleMessages("Project Root Path: "+getActualProjectPath());
+        appendConsoleMessages("Java Root Package Path: "+getActualJavaPath());
+    }
+
+    private void requestEditProjectAction() {
+        try {
+            editProjectDialog.setInfo(engine.getProjectRootPath(), engine.getProjectJavaRootPath());
+            editProjectDialog.setVisible(true);
+            refreshTitle(newProjectDialog.getProjectPathField()+appVersion);
+            appendConsoleMessages("Edited Path for project");
+            appendConsoleMessages("Project Root Path: "+getActualProjectPath());
+            appendConsoleMessages("Java Root Package Path: "+getActualJavaPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void refreshDetectionsTree() {
+        detectionsTree.setModel(controller.getDetectionsTree());
+    }
+
+    @Override
+    public void refreshInfoBox() {
+
+    }
+
+    @Override
+    public void appendConsoleMessages(String message) {
+        try {
+            consoleOutput.insertString(consoleOutput.getLength(),message+"\n",keyWord);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void enableRunAnalysisButton() {
+        buttonRunAnalysis.setEnabled(true);
+    }
+
+    @Override
+    public void disableRunAnalysisButton() {
+        buttonRunAnalysis.setEnabled(false);
+    }
+
+    @Override
+    public String getActualProjectPath(){
+        try {
+            return engine.getProjectRootPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public String getActualJavaPath(){
+        try {
+            return engine.getProjectJavaRootPath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
