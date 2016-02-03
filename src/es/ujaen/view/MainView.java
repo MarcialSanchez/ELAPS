@@ -3,13 +3,17 @@ package es.ujaen.view;
 import es.ujaen.controller.AnalysisObserver;
 import es.ujaen.controller.ControllerInterface;
 import es.ujaen.model.EngineInterface;
+import es.ujaen.model.HistoryNode;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.InlineView;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,7 +23,7 @@ import java.io.IOException;
 /**
  * Created by Marcial J. Sánchez Santiago on 28/01/16.
  */
-public class MainView extends javax.swing.JFrame implements MainViewInterface, AnalysisObserver{
+public class MainView extends javax.swing.JFrame implements MainViewInterface, AnalysisObserver, TreeSelectionListener{
     private String appVersion = " - ELAPS 1.0 -";
 
     private EngineInterface engine;
@@ -31,7 +35,9 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
     private JPanel rootPanel;
     private JTextPane consolePanel;
     private JTree detectionsTree;
-    private JTextPane helpPanel;
+    private JTextArea helpPanel;
+    private JScrollPane scrollTree;
+    private JScrollPane scrollPane;
 
     public MainView(EngineInterface engine, ControllerInterface controller){
         this.engine = engine;
@@ -45,6 +51,9 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
         setWindowPosition();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        controller.registerAnalysisObserver(this);
+
         setVisible(true);
 
     }
@@ -70,6 +79,9 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
 
     private StyledDocument consoleOutput;
     private SimpleAttributeSet keyWord;
+
+    private StyledDocument helpOutput;
+    private SimpleAttributeSet helpKeyWord;
 
     private void initComponents() {
         /**
@@ -122,18 +134,31 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
 
         //Tree initialization
         detectionsTree.setModel(null);
+        detectionsTree.setPreferredSize(null);
+        detectionsTree.addTreeSelectionListener(this);
+
+        scrollTree.setViewportView(detectionsTree);
 
         //Defining style and default text for the Console Panel
+        Color bgColor = Color.DARK_GRAY;
+        UIDefaults defaults = new UIDefaults();
+        defaults.put("TextPane[Enabled].backgroundPainter", bgColor);
+        consolePanel.putClientProperty("Nimbus.Overrides", defaults);
+        consolePanel.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
+        consolePanel.setBackground(bgColor);
+
         consoleOutput = consolePanel.getStyledDocument();
         keyWord = new SimpleAttributeSet();
         StyleConstants.setForeground(keyWord, Color.WHITE);
         StyleConstants.setBackground(keyWord, Color.DARK_GRAY);
-        StyleConstants.setBold(keyWord, true);
+        StyleConstants.setFontFamily(keyWord, "Source Code Pro");
         try {
             consoleOutput.insertString(0, "Wellcome to the ELAPS (Everywhere Lightweight Program for Security)\n", null);
         }catch(Exception e) { System.out.println(e); }
 
 
+        helpPanel.setSelectionColor(Color.BLUE);
+        helpPanel.append("Information Panel");
 
         UIDefaults defs = UIManager.getDefaults();
         defs.put("consolePanel.background", new ColorUIResource(255, 255, 255));
@@ -141,11 +166,33 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
 
         pack();
     }
+
+    public void valueChanged(TreeSelectionEvent e) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)
+                detectionsTree.getLastSelectedPathComponent();
+
+        if (node == null) return;
+
+        HistoryNode selectedNode = (HistoryNode)node.getUserObject();
+        refreshInfoBox(selectedNode.getAssociatedVulnerability().getInfo());
+    }
+
+    private void expandAllNodes(JTree tree, int startingIndex, int rowCount){
+        for(int i=startingIndex;i<rowCount;++i){
+            tree.expandRow(i);
+        }
+
+        if(tree.getRowCount()!=rowCount){
+            expandAllNodes(tree, rowCount, tree.getRowCount());
+        }
+    }
+
     private void requestRunAnalysis(){
         controller.runAnalysis();
     }
 
     private void requestNewProjectAction() {
+        newProjectDialog.resetFields();
         newProjectDialog.setVisible(true);
         buttonEditProject.setEnabled(true);
         enableRunAnalysisButton();
@@ -170,12 +217,15 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
 
     @Override
     public void refreshDetectionsTree() {
-        detectionsTree.setModel(controller.getDetectionsTree());
+        detectionsTree.setModel(new DefaultTreeModel(controller.getDetectionsTree()));
+        expandAllNodes(detectionsTree, 0, detectionsTree.getRowCount());
+        detectionsTree.setVisibleRowCount(detectionsTree.getRowCount());
     }
 
     @Override
-    public void refreshInfoBox() {
+    public void refreshInfoBox(String infoString) {
 
+        helpPanel.setText(infoString);
     }
 
     @Override

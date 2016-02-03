@@ -1,5 +1,6 @@
 package es.ujaen.controller;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeModel;
 
 /**
@@ -7,9 +8,11 @@ import javax.swing.tree.TreeModel;
  */
 public interface ControllerInterface {
 
+    void registerAnalysisObserver(AnalysisObserver o);
+
     void runAnalysis();
 
-    TreeModel getDetectionsTree();
+    DefaultMutableTreeNode getDetectionsTree();
 
     void setProjectInfo(String newProjectPath, String newJavaPath);
 }

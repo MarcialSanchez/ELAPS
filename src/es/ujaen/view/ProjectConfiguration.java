@@ -106,13 +106,16 @@ public class ProjectConfiguration extends JDialog{
 
     private void cancelButtonActionPerformed(ActionEvent evt){
         this.setVisible(false);
-        projectPathField.setText("");
-        javaPathField.setText("");
     }
 
     public void setInfo(String projectPath, String javaPath){
         projectPathField.setText(projectPath);
         javaPathField.setText(javaPath);
+    }
+
+    public void resetFields(){
+        projectPathField.setText("");
+        javaPathField.setText("");
     }
 
     public String getProjectPathField(){

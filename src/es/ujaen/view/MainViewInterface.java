@@ -8,9 +8,7 @@ import java.io.IOException;
  */
 public interface MainViewInterface {
 
-    void refreshDetectionsTree();
-
-    void refreshInfoBox();
+    void refreshInfoBox(String infoString);
 
     void appendConsoleMessages(String message);
 

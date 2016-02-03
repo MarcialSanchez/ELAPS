@@ -6,96 +6,115 @@
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.executeUpdate(String,int)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.executeUpdate(String,int[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.executeUpdate(String,String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.executeQuery(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.execute(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.execute(String,int)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.execute(String,String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.execute(String,int[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Statement.addBatch(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String,int)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String,int[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String,int,int)">
 		<paramCount>3</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String,int,int,int)">
 		<paramCount>4</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareStatement(String,String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareCall(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareCall(String,int,int)">
 		<paramCount>3</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.sql.Connection.prepareCall(String,int,int,int)">
 		<paramCount>4</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>SQL Injection</category>
+		<info>""</info>
 	</sink>
 	
 	<!-- HTTP splitting -->
@@ -103,6 +122,7 @@
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>HTTP Response Splitting</category>
+		<info>""</info>
 	</sink>
 	
 	<!-- Cross-site Scripting -->
@@ -110,62 +130,98 @@
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+		<info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<sink id="javax.servlet.ServletOutputStream.println(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+        <info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<sink id="javax.servlet.jsp.JspWriter.print(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+        <info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<sink id="javax.servlet.jsp.JspWriter.println(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+        <info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<sink id="java.io.PrintWriter.print(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+        <info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<sink id="java.io.PrintWriter.println(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-	</sink>
+        <info>Type of Vulnerability: Cross-site Scripting
+
+You can check the next URL for information to fix this vulnerability:
+
+https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
+    </sink>
 	<!-- Path Traversal -->
 	<sink id="java.io.File(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.io.RandomAccessFile(String,String)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.io.FileReader(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.io.FileInputStream(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.io.FileWriter(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.io.FileOutputStream(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Path Traversal</category>
+		<info>""</info>
 	</sink>
 	
 	<!-- Command Injection -->
@@ -173,97 +229,116 @@
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.lang.Runtime.exec(String[])">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.lang.Runtime.exec(String,String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.lang.Runtime.exec(String[],String[])">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="java.lang.Runtime.exec(String[],String[],File)">
 		<paramCount>3</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Command Injection</category>
+		<info>""</info>
 	</sink>
 	<!-- Information Leakage -->
 	<sink id="java.io.PrintStream.write(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Information Leakage</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.radeox.util.logging.Logger.log(int,String)">
 		<paramCount>2</paramCount>
 		<vulnParam>1</vulnParam>
 		<category>Information Leakage</category>
+		<info>""</info>
 	</sink>
 	<sink id="javax.xml.xpath.XPath.compile(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="javax.xml.xpath.XPath.evaluate(String,InputSource)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="javax.xml.xpath.XPath.evaluate(String,InputSource,QName)">
 		<paramCount>3</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="javax.xml.xpath.XPath.evaluate(String,Object)">
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="javax.xml.xpath.XPath.evaluate(String,Object,QName)">
 		<paramCount>3</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.apache.xpath.XPath(String,SourceLocator,PrefixResolver,int)">
 		<paramCount>4</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.apache.xpath.XPath(String,SourceLocator,PrefixResolver,int,ErrorListener)">
 		<paramCount>5</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.apache.xpath.XPath(String,SourceLocator,PrefixResolver,int,ErrorListener,FunctionTable)">
 		<paramCount>6</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.apache.commons.jxpath.JXPathContext.getValue(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.xmldb.api.modules.XPathQueryService.query(String)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.xmldb.api.modules.XPathQueryService.query(String,String)">
 		<paramCount>2</paramCount>
 		<vulnParam>1</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="org.xmldb.api.modules.XMLResource.setContent(Object)">
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>XPath Injection</category>
+		<info>""</info>
 	</sink>
 	
 	<!-- LDAP Injection -->
@@ -271,22 +346,26 @@
 		<paramCount>2</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>LDAP Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="com.novell.ldap.LDAPConnection.search(String,int,String,String[],boolean)">
 		<paramCount>5</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>LDAP Injection</category>
+		<info>""</info>
 	</sink>
 	<sink id="com.novell.ldap.LDAPConnection.search(String,int,String,String[],boolean,LDAPSearchQueue)">
 		<paramCount>6</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>LDAP Injection</category>
+		<info>""</info>
 	</sink>
 	
 	<sink id="com.novell.ldap.LDAPConnection.search(String,int,String,String[],boolean,LDAPSearchQueue)">
 		<paramCount>6</paramCount>
 		<vulnParam>2</vulnParam>
 		<category>LDAP Injection</category>
+		<info>""</info>
 	</sink>
 	
 	

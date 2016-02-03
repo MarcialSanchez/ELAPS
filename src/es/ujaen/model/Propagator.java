@@ -27,7 +27,7 @@ public class Propagator {
          * Comprobamos el sink al que pertenece, el parámetro vulnerable y procesamos la expresion del argumento correspondiente
          */
         actualMatch = match;
-        HistoryNode actualHistoryNode = new HistoryNode(parent, match.getMatchNode(), "MethodCallExpr", HistoryNode.NOT_END);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, match.getMatchNode(), "MethodCallExpr", HistoryNode.NOT_END, match);
         Integer argPosition = match.getMatchedSink().getVulnerableParameter();
         Node vulnerableArg = match.getMatchNode().getArgs().get(argPosition);
         processExpression(vulnerableArg, "Expression", actualHistoryNode);
@@ -64,21 +64,21 @@ public class Propagator {
          * Con una expresion literal detenemos la propagación y se considera no contaminado
          * Expresiones literales: "Cadena", 1, 1.22
          */
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_POISONED);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_POISONED, parent.getAssociatedMatch());
     }
 
     public static void processBinary(BinaryExpr expression, String type, HistoryNode parent){
         /**
          * Expresiones Binarias, como una concatenación de cadenas
          */
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
         for(Node component : expression.getChildrenNodes()){
             processExpression(component, "", actualHistoryNode);
         }
     }
 
     public static void processNameExpr(NameExpr expression, String type, HistoryNode parent){
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
         List<Node>  assigns = Searcher.searchAssignments(expression, actualMatch);
         for(Node assign : assigns){
             processExpression(assign, "", actualHistoryNode);
@@ -86,7 +86,7 @@ public class Propagator {
     }
 
     public static void processAssignExpr(AssignExpr expression, String type, HistoryNode parent){
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
         processExpression(expression.getValue(), "" ,actualHistoryNode);
     }
 
@@ -94,7 +94,7 @@ public class Propagator {
 
     public static void processVariableDeclarator(VariableDeclarator expression, String type, HistoryNode parent){
         if(expression.getInit() != null) {
-            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
             processExpression(expression.getInit(), "", actualHistoryNode);
         }
     }
@@ -102,7 +102,7 @@ public class Propagator {
     public static void processMethodCall(MethodCallExpr expression, String type, HistoryNode parent){
         //System.out.println(expression.toString());
         if(parent.containsAncestor(expression)){
-            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.RECURSION);
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.RECURSION, parent.getAssociatedMatch());
             return;
         }
         CompilationUnit cUnit = CompilationUnitManager.getCompilationUnitFromNode(expression);
@@ -112,7 +112,7 @@ public class Propagator {
         for(XmlManager.SourceDescription source : sources) {
             SearchMatch sourceMatch = Searcher.checkMethodCallExprAgainstMethodQualifiedName(source.getID(), expression, cUnit, source);
             if (sourceMatch != null) {
-                HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.POISONED);
+                HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.POISONED, parent.getAssociatedMatch());
                 return;
             }
         }
@@ -122,7 +122,7 @@ public class Propagator {
         MethodDeclaration declaration = CompilationUnitManager.getMethodDeclaration(expression.getName());
         if(declaration != null) {
 
-            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END);
+            HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
             List<ReturnStmt> returns = getMethodReturns(declaration);
             for (ReturnStmt ret: returns) {
                 processExpression(ret.getExpr(), "", actualHistoryNode);
@@ -135,7 +135,7 @@ public class Propagator {
         for(XmlManager.DerivationDescription derivation : derived){
             SearchMatch derivationMatch = Searcher.checkMethodCallExprAgainstMethodQualifiedName(derivation.getID(), expression, cUnit, derivation);
             if(derivationMatch != null){
-                HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.DERIVATION);
+                HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.DERIVATION, parent.getAssociatedMatch());
                 processExpression(expression.getChildrenNodes().get(0),"",actualHistoryNode);
                 return;
             }
@@ -143,7 +143,7 @@ public class Propagator {
         /**
          * Si no se da ninguno de los casos anteriores entonces paramos el análisis en este punto e indicamos en el historial que no se ha podido profundizar
          */
-        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.CANT_CONTINUE);
+        HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.CANT_CONTINUE, parent.getAssociatedMatch());
     }
 
     public static void setDescriptions(Collection<XmlManager.SourceDescription> newSources, Collection<XmlManager.DerivationDescription> newDerived, Collection<XmlManager.SafeDescription> newSafes){

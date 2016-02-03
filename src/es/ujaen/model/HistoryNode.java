@@ -1,5 +1,6 @@
 package es.ujaen.model;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 
 import java.util.ArrayList;
@@ -25,17 +26,21 @@ public class HistoryNode {
     private String nodeType ;
     private Integer level;
     private int historyType;
+    private SearchMatch associatedMatch;
+    private CompilationUnit associatedCompilationUnit;
 
     public HistoryNode(){
         this.level = 0;
     }
-    public HistoryNode(HistoryNode parent, Node expression, String nodeType, int historyType) {
+    public HistoryNode(HistoryNode parent, Node expression, String nodeType, int historyType, SearchMatch associatedMatch) {
         this.parent = parent;
         parent.addChildren(this);
         this.historyType = historyType;
         this.level = parent.getLevel()+1;
         this.expression = expression;
         this.nodeType = nodeType;
+        this.associatedMatch = associatedMatch;
+        this.associatedCompilationUnit = CompilationUnitManager.getCompilationUnitFromNode(expression);
     }
 
     public void addChildren(HistoryNode child){
@@ -50,6 +55,9 @@ public class HistoryNode {
         return parent;
     }
 
+    public SearchMatch getAssociatedMatch() { return associatedMatch; }
+
+    public XmlManager.SinkDescription getAssociatedVulnerability() { return associatedMatch.getMatchedSink(); }
 
     public Node getExpression() {
         return expression;
@@ -95,6 +103,45 @@ public class HistoryNode {
         }
         if(expression.getBeginLine() != node.getBeginLine()) return false;
         return true;
+    }
+
+    public Boolean isBranchPoisoned(){
+        if(this.isPoisoned()){
+            return true;
+        }
+        for(HistoryNode child : children){
+            if(child.isBranchPoisoned()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString(){
+        String output;
+        if( expression!=null) {
+            output = expression.toString() + " - " + nodeType;
+            if(historyType == DERIVATION){
+                output = output + " - " + "Derivation Method";
+            }
+            if(historyType == RECURSION){
+                output = output + " - " + "Detected Recursive loop";
+            }
+            if(isEndNode()){
+                if(historyType == CANT_CONTINUE){
+                    output = output + " Can't continue; No declaration of the method found";
+                }else{
+                    output = output + " -> Poisoned end: " + isPoisoned();
+                }
+
+            }
+            output = output + " - [File: " + associatedCompilationUnit.getPackage().getName()+":" + expression.getBeginLine()+"]";
+            return(output);
+
+        }else{
+            return("Vulnerability Detections: ");
+        }
     }
     public void printHistoryInConsole(){
         String tabulation = "";

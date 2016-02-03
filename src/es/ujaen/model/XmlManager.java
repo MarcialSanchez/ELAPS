@@ -28,20 +28,21 @@ public class XmlManager {
             public int getVulnerableParameter() {
                 return vulnerableParameter;
             }
-            String id, typeName, methodName, categoryName;
+            String id, typeName, methodName, categoryName, info;
             private int vulnerableParameter;
 
             protected SinkDescription(String id, String typeName, String methodName, String categoryName,
-                                      int parameterCount, int vulnerableParameter)
+                                      int parameterCount, int vulnerableParameter, String info)
             {
                 this.id = id;
                 this.typeName = typeName;
                 this.methodName = methodName;
                 this.categoryName = categoryName;
                 this.vulnerableParameter = vulnerableParameter;
+                this.info = info;
             }
 
-            public SinkDescription(String id, String categoryName, int vulnerableParameter){
+            public SinkDescription(String id, String categoryName, int vulnerableParameter, String info){
                 this.id = id;
 
                 int right_bracker_idx = id.lastIndexOf(')');
@@ -60,6 +61,7 @@ public class XmlManager {
                 this.methodName = id.substring(0, left_bracker_idx);
                 this.categoryName = categoryName;
                 this.vulnerableParameter = vulnerableParameter;
+                this.info = info;
             }
 
             public String toString(){
@@ -77,6 +79,7 @@ public class XmlManager {
             public String getID() {
                 return id;
             }
+            public String getInfo(){ return info; }
         }
 
         public static class SourceDescription {
@@ -229,8 +232,8 @@ public class XmlManager {
                         String categoryName = sinkNode.getElementsByTagName("category").item(0).getChildNodes().item(0).getNodeValue().trim();
                         int parameterCount  = new Integer(sinkNode.getElementsByTagName("paramCount").item(0).getChildNodes().item(0).getNodeValue().trim()).intValue();
                         int vulnerableParameter = new Integer(sinkNode.getElementsByTagName("vulnParam").item(0).getChildNodes().item(0).getNodeValue().trim()).intValue();
-
-                        SinkDescription desc = new SinkDescription(id, categoryName, vulnerableParameter);
+                        String info = sinkNode.getElementsByTagName("info").item(0).getChildNodes().item(0).getNodeValue();
+                        SinkDescription desc = new SinkDescription(id, categoryName, vulnerableParameter, info);
                         result.add(desc);
                         if(TRACE) System.out.println(desc);
                     }//end of if clause

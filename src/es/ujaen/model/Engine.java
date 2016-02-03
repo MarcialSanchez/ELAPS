@@ -65,14 +65,27 @@ public class Engine implements EngineInterface{
             if(masterRoot.getChildren().size() != matches.size()){
                 System.out.println("Something happened in the propagation");
             }else{
-                masterRoot.printHistoryInConsole();
+                //masterRoot.printHistoryInConsole();
                 System.out.println("Propagation end correctly");
-                return masterRoot;
+                HistoryNode filteredRoot = filterPositiveDetections(masterRoot);
+                System.out.println("Filtered");
+                //filteredRoot.printHistoryInConsole();
+                return filteredRoot;
             }
         }else{
-            System.out.println("Any vulnerable method found");
+            System.out.println("No vulnerable method found");
         }
         return null;
+    }
+
+    private HistoryNode filterPositiveDetections(HistoryNode root){
+        HistoryNode newHistoryRoot = new HistoryNode();
+        for(HistoryNode branch: root.getChildren()){
+            if(branch.isBranchPoisoned()){
+                newHistoryRoot.addChildren(branch);
+            }
+        }
+        return newHistoryRoot;
     }
 
 
