@@ -10,14 +10,12 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.*;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.InlineView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 /**
@@ -110,6 +108,11 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
             @Override
             public void actionPerformed(ActionEvent e) {
                 requestEditProjectAction();
+            }
+        });
+        buttonExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) { exitButtonActionPerformed(e);
             }
         });
 
@@ -213,6 +216,10 @@ public class MainView extends javax.swing.JFrame implements MainViewInterface, A
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }
 
     @Override

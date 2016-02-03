@@ -74,7 +74,7 @@ public class Searcher {
     }
 
     private static List<File> loadLocalJars() throws NoFilesInPathException{
-        return lookPathForJarFiles(new File("resources/APIs/tomcat"));
+        return lookPathForJarFiles(new File("resources/APIs"));
     }
 
     private static List<File> lookPathForJarFiles(File directory) throws NoFilesInPathException {
