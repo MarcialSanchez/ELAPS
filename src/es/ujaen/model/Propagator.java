@@ -33,7 +33,7 @@ public class Propagator {
         processExpression(vulnerableArg, "Expression", actualHistoryNode);
 
     }
-    public static void processExpression(Node expression, String type, HistoryNode parent){
+    private static void processExpression(Node expression, String type, HistoryNode parent){
 
         if(expression instanceof LiteralExpr){
             processLiteral((LiteralExpr)expression, "LiteralExpr", parent);
@@ -59,7 +59,7 @@ public class Propagator {
         }
     }
 
-    public static void processLiteral(LiteralExpr expression, String type, HistoryNode parent){
+    private static void processLiteral(LiteralExpr expression, String type, HistoryNode parent){
         /**
          * Con una expresion literal detenemos la propagación y se considera no contaminado
          * Expresiones literales: "Cadena", 1, 1.22
@@ -67,7 +67,7 @@ public class Propagator {
         HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_POISONED, parent.getAssociatedMatch());
     }
 
-    public static void processBinary(BinaryExpr expression, String type, HistoryNode parent){
+    private static void processBinary(BinaryExpr expression, String type, HistoryNode parent){
         /**
          * Expresiones Binarias, como una concatenación de cadenas
          */
@@ -77,7 +77,7 @@ public class Propagator {
         }
     }
 
-    public static void processNameExpr(NameExpr expression, String type, HistoryNode parent){
+    private static void processNameExpr(NameExpr expression, String type, HistoryNode parent){
         HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
         List<Node>  assigns = Searcher.searchAssignments(expression, actualMatch);
         for(Node assign : assigns){
@@ -85,21 +85,21 @@ public class Propagator {
         }
     }
 
-    public static void processAssignExpr(AssignExpr expression, String type, HistoryNode parent){
+    private static void processAssignExpr(AssignExpr expression, String type, HistoryNode parent){
         HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
         processExpression(expression.getValue(), "" ,actualHistoryNode);
     }
 
     //TODO Procesar Parametro
 
-    public static void processVariableDeclarator(VariableDeclarator expression, String type, HistoryNode parent){
+    private static void processVariableDeclarator(VariableDeclarator expression, String type, HistoryNode parent){
         if(expression.getInit() != null) {
             HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.NOT_END, parent.getAssociatedMatch());
             processExpression(expression.getInit(), "", actualHistoryNode);
         }
     }
 
-    public static void processMethodCall(MethodCallExpr expression, String type, HistoryNode parent){
+    private static void processMethodCall(MethodCallExpr expression, String type, HistoryNode parent){
         //System.out.println(expression.toString());
         if(parent.containsAncestor(expression)){
             HistoryNode actualHistoryNode = new HistoryNode(parent, expression, type, HistoryNode.RECURSION, parent.getAssociatedMatch());
