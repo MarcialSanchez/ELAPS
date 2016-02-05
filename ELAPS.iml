@@ -11,7 +11,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../Librerias/java-symbol-solver/classes/artifacts/java_symbol_solver_core_jar/java-symbol-solver-core.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../Proyecto/Librerias/java-symbol-solver/classes/artifacts/java_symbol_solver_core_jar/java-symbol-solver-core.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

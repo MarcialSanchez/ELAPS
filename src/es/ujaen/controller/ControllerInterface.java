@@ -1,7 +1,6 @@
 package es.ujaen.controller;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
 
 /**
  * Created by blitzer on 1/02/16.

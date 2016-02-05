@@ -5,10 +5,6 @@ import es.ujaen.controller.Controller;
 import es.ujaen.model.Engine;
 import es.ujaen.view.MainView;
 
-import javax.swing.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class Main {
 
 

@@ -1,8 +1,5 @@
 package es.ujaen.view;
 
-import javax.swing.tree.TreeModel;
-import java.io.IOException;
-
 /**
  * Created by blitzer on 1/02/16.
  */
