@@ -160,7 +160,7 @@ https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-        <info>Type of Vulnerability: Cross-site Scripting
+        <info>Type of vulnerabilitylity: Cross-site Scripting
 
 You can check the next URL for information to fix this vulnerability:
 
@@ -170,7 +170,7 @@ https://www.owasp.org/index.php/Reviewing_Code_for_Cross-Site_Scripting</info>
 		<paramCount>1</paramCount>
 		<vulnParam>0</vulnParam>
 		<category>Cross-site Scripting</category>
-        <info>Type of Vulnerability: Cross-site Scripting
+        <info>Type of vulnerabilitylity: Cross-site Scripting
 
 You can check the next URL for information to fix this vulnerability:
 
